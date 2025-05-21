@@ -1,0 +1,95 @@
+
+1. Background 
+The International Solar Alliance (ISA) is a coalition of 120+ member countries 
+working to promote the use of solar energy to address energy needs sustainably. 
+ISA’s mission is to mobilize over USD 1 trillion in investments for solar projects by 
+2030 and enable energy access in underserved regions. Recognizing the critical 
+role of innovation, ISA has initiated several programmes aimed at proliferating 
+solar investments and innovations. 
+As part of its innovation and startup support initiatives, ISA launched the SolarX 
+Startup  Challenge,  a  flagship  program  designed  to  identify,  nurture,  and 
+accelerate solar startups across Africa, Asia-Pacific (APAC), Latin America & the 
+Caribbean (LAC), and the Middle East & North Africa (MENA). 
+With  the  growing  number  of  SolarX  winners  across  multiple regions(50 as of 
+now- Africa-20, APAC-20, India-10), ISA recognizes the need for an integrated 
+digital platform that can showcase these startups, track their progress, visualize 
+regional  data  insights,  and  facilitate  collaboration  with  investors, accelerators, 
+and governments. 
+ISA therefore seeks to hire a qualified technology firm to develop and maintain a 
+Digital  Dashboard  for  SolarX  Winners,  which  will  serve  as  a  real-time, 
+public-facing  and  stakeholder-oriented  interface/dashboard  to  showcase  and 
+track  the  journey,  performance,  and  support  received  by  each of the winning 
+startup. 
+2. Objectives 
+The primary objective of this assignment is to: 
+• Develop a dynamic, scalable, and user-friendly digital dashboard for the 
+SolarX Startup Challenge. 
+• Showcase profiles of all SolarX-winning startups from different regions. 
+• Visualize key data and impact metrics (geography, funding received, sector 
+focus, technology maturity, SDG alignment, etc.). 
+• Facilitate SolarX application and database- connection with the main 
+website. 
+• Provide backend access for the ISA team to update and manage startup 
+profiles. 
+• Ensure compatibility with ISA's web ecosystem and data security 
+standards. 
+3. Scope of Work 
+The selected firm will be responsible for the end-to-end development and 
+operationalization of the dashboard, covering the following components: 
+A. Requirement Gathering and UI/UX Design 
+• Conduct consultations with ISA and relevant stakeholders to understand 
+functional and aesthetic requirements. 
+• Develop wireframes and UI/UX mock-ups aligned with ISA branding 
+guidelines. 
+• Finalize dashboard modules and data visualization elements. 
+B. Dashboard Development 
+• Build a web-based dashboard hosted on ISA’s existing infrastructure or 
+recommended secure cloud servers. 
+• Create searchable and filterable profiles for each startup, including: 
+• Country, startup name, contact details 
+• Business summary, technology description, innovation type 
+• Accelerator program participation and milestones 
+• Funding received, investor connections 
+• SDG and climate impact metrics 
+• Integrate interactive maps/globe and charts (by region, sector, tech type, 
+etc.) 
+• Success Stories Showcase 
+• Media coverage, Recognition, and other advocacy related events 
+• SolarX promotional collaterals/brochures/booklets etc. 
+• Call for application: for the SolarX LAC leg 
+• Develop multilingual support for regional representation. 
+• Implement backend Content Management System (CMS) access for ISA 
+staff (I.T. team) to update records. 
+C. Integration and Interoperability 
+• Integrate dashboard with ISA’s website and future SolarX microsites. 
+• Ensure mobile responsiveness and accessibility compliance. 
+• Build data import/export capabilities for internal analytics/reporting. 
+D. Training, Handover and Maintenance 
+• Conduct training sessions for ISA team on using the dashboard. 
+• Provide documentation (User Manual, Admin Manual, Troubleshooting 
+Guide). 
+• Offer 6-months post-launch maintenance and support. 
+• Transfer source code and documentation to ISA upon completion. 
+  
+4. Deliverables 
+• Inception  Report: A detailed report outlining the team's understanding of 
+the  project,  proposed  methodology,  work  plan,  and  team  deployment 
+strategy. 
+• Wireframes  &  Mockups: UI/UX design prototypes showcasing the layout 
+and user interface of all dashboard modules. 
+•  Beta  Version  of  Dashboard: A fully functional version of the dashboard 
+with  integrated  features  and  dummy  data  for  testing  and  feedback 
+purposes. 
+•  Final  Dashboard:  The  live,  production-ready  version  of  the  dashboard 
+incorporating feedback from the beta phase and hosted on the designated 
+platform. 
+•  Training  &  Handover: Training sessions for relevant stakeholders, along 
+with  the  submission  of  comprehensive  user  manuals  and  technical 
+documentation. 
+5. Timeline 
+The  project  is  expected to take place over a period of 2 months(May-June 
+2025).  The  timeframe may be modified on the basis of mutual consultation 
+between the agency and ISA, however, all deliverables should be completed 
+within the contract duration. All deliverables should be formatted and submitted 
+in ready-to-use/print formats. 
+ 
