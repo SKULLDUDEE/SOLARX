@@ -6,12 +6,17 @@ import StatsSection from './components/StatsSection'
 import Footer from './components/Footer'
 import WelcomeBanner from './components/WelcomeBanner'
 import HeroCarousel from './components/HeroCarousel'
-import CompanyInformation from './components/CompanyInformation'
-
+import FundingInvestorsDashboard from './components/FundingInvestorsDashboard'
+import SuccessStories from './components/SuccessStories'
+import MediaCoverageSection from './components/MediaCoverageSection'
+import SolarXPromotionalSlider from './components/SolarXPromotionalSlider'
+import SolarXApplicationSection from './components/SolarXApplicationSection'
+import AboutSolarXChallenge from './components/AboutSolarXChallenge'
+import GlobalImpactSection from './components/GlobalImpactSection'
+import ProjectTimeline from './components/ProjectTimeline'
 function App() {
   const [isMobile, setIsMobile] = useState(false);
 
-  // Check if the device is mobile
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -30,12 +35,20 @@ function App() {
   return (
     <div className="relative">
       <WelcomeBanner />
-      <SolarXNavbar />
-      {/* Content padding to prevent it from being hidden under the navbar */}
+      <SolarXNavbar isMobile={isMobile} />
+     
       <div className="relative">
         <HeroCarousel />
-        <SolarXWinners />
-        <StatsSection />
+        <SolarXWinners isMobile={isMobile} />
+        <StatsSection isMobile={isMobile} />
+        <FundingInvestorsDashboard isMobile={isMobile} />
+        <SuccessStories isMobile={isMobile} />
+        <MediaCoverageSection isMobile={isMobile} />
+        <SolarXPromotionalSlider isMobile={isMobile} />
+        <SolarXApplicationSection isMobile={isMobile} />
+        <AboutSolarXChallenge isMobile={isMobile} />
+        <GlobalImpactSection isMobile={isMobile} />
+        <ProjectTimeline isMobile={isMobile} />
         <Footer />
       </div>
     </div>

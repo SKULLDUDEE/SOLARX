@@ -8,6 +8,12 @@ import CompanyInfoSection from '../components/CompanyInformation';
 import BusinessSummary from '../components/BusinessSummary';
 import TechnologySection from '../components/TechnologySection';
 import ImpactMetrics from '../components/ImpactMetrics';
+import FundingJourney from '../components/FundingJourney';
+import ClimateImpactMetrics from '../components/ClimateImpactMetrics';
+import SuccessStoriesSlider from '../components/SuccessStoriesSlider';
+import PressFeaturesSection from '../components/PressFeaturesSection';
+import CompanyTimelineSection from '../components/CompanyTimelineSection';
+import ProjectGallery from '../components/ProjectGallery';
 import Footer from '../components/Footer';
 
 export default function StartupDetail() {
@@ -103,6 +109,13 @@ export default function StartupDetail() {
       <BusinessSummary companyId={id} />
       <TechnologySection companyId={id} />
       <ImpactMetrics companyId={id} />
+      <FundingJourney companyId={id} />
+      <ClimateImpactMetrics companyId={id} />
+      <SuccessStoriesSlider companyId={id} />
+      <PressFeaturesSection companyId={id} />
+      <ProjectGallery companyId={id} />
+      <CompanyTimelineSection companyId={id} />
+      
       <Footer />
 
       

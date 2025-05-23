@@ -64,6 +64,14 @@ const SolarFlowHero = ({ companyId }) => {
         // Find the company with the matching ID
         const company = result.data.find(c => c.id.toString() === companyId.toString());
         
+        // Fetch logo images from upload files API
+        const logoResponse = await fetch(`http://localhost:1337/api/upload/files`);
+        const logoFiles = await logoResponse.json();
+        
+        // Get the latest logo file (assuming the most recent upload is the one to use)
+        const logoFile = logoFiles.length > 0 ? logoFiles[0] : null;
+        const logoUrl = logoFile ? `http://localhost:1337${logoFile.url}` : null;
+        
         if (company) {
           // The data structure is different than expected - the fields are directly on the company object
           // Parse the introduction manually
@@ -82,8 +90,8 @@ const SolarFlowHero = ({ companyId }) => {
             foundingYear: company.FoundingYear || '',
             headquarters: company.Headquarters || '',
             teamSize: company.TeamSize || '',
-            imageUrl: null,
-            logo: null,
+            imageUrl: logoUrl, // Use the logo URL from the upload files API
+            logo: logoUrl,
             coverImage: null
           };
           setCompanyData(data);
@@ -175,50 +183,25 @@ const SolarFlowHero = ({ companyId }) => {
           </div>
         </div>
         
-        {/* Right side showcase */}
+        {/* Right side showcase - Only the logo image */}
         <div className="w-full lg:w-1/2 relative">
-          <div className={`bg-orange-400 rounded-xl h-64 md:h-96 shadow-xl flex items-center justify-center overflow-hidden transition-all duration-700 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
-            {/* Solar panel image */}
-            <img 
-              src={companyData && companyData.imageUrl ? 
-                companyData.imageUrl : 
-                `https://placehold.co/600x400/orange/white?text=${companyData ? encodeURIComponent(companyData.name) : 'Solar+Energy'}`
-              } 
-              alt={companyData && companyData.name ? companyData.name : "Solar panel technology"} 
-              className="w-full h-full object-cover opacity-30"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = `https://placehold.co/600x400/orange/white?text=${companyData ? encodeURIComponent(companyData.name) : 'Solar+Energy'}`;
-              }}
-            />
-            
-            {/* Overlay text/logo */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="text-white text-5xl md:text-7xl font-bold text-center px-4">
-                {companyData && companyData.name ? companyData.name : "SolarFlow"}
+          <div className={`bg-white rounded-xl h-64 md:h-96 shadow-xl flex items-center justify-center overflow-hidden transition-all duration-700 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+            {/* Company logo image */}
+            {companyData && companyData.imageUrl ? (
+              <img 
+                src={companyData.imageUrl}
+                alt={companyData.name || "Company logo"} 
+                className="w-full h-full object-contain p-4"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = `https://placehold.co/600x400/orange/white?text=${companyData ? encodeURIComponent(companyData.name) : 'Solar+Energy'}`;
+                }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full w-full">
+                <div className="text-gray-400 text-xl">No logo available</div>
               </div>
-              {companyData && companyData.headquarters && (
-                <div className="text-white text-xl mt-4 bg-black bg-opacity-50 px-4 py-1 rounded">
-                  {companyData.headquarters}
-                </div>
-              )}
-            </div>
-            
-            {/* Efficiency badge */}
-            <div 
-              className={`absolute -top-4 right-4 bg-white text-black px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all duration-500 ${showEfficiency ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'}`}
-            >
-              <Bolt className="text-orange-500" size={20} />
-              <span className="font-bold">40% More Efficient</span>
-            </div>
-            
-            {/* Cost badge */}
-            <div 
-              className={`absolute -bottom-0 left-8 bg-black text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all duration-500 ${showCost ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-            >
-              <DollarSign className="text-orange-400" size={20} />
-              <span className="font-bold">30% Cost Reduction</span>
-            </div>
+            )}
           </div>
         </div>
       </div>

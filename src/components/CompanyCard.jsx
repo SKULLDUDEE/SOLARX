@@ -204,7 +204,7 @@ export default function CompanyCard({ companyId, regionClass }) {
       <div className="p-4 sm:p-6 content-container">
         <h3 className="text-lg sm:text-xl font-bold mb-1 text-gray-900 line-clamp-1">{company.name}</h3>
         <p className="text-sm text-gray-600 mb-3">{company.location}</p>
-        <p className="text-sm text-gray-700 line-clamp-3 mb-4">{company.description}</p>
+        <p className="text-sm text-gray-700 mb-4 h-5 overflow-hidden whitespace-nowrap text-ellipsis" style={{ maxWidth: '100%', display: 'block' }}>{company.description}</p>
         
         <div className="flex justify-between items-center">
           <span className={`inline-block px-3 py-1 text-xs font-semibold text-${company.categoryColor}-700 bg-${company.categoryColor}-100 rounded-full`}>

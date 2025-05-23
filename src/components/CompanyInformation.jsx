@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Building, Calendar, MapPin, DollarSign, Users, Shield, Target, ArrowLeft, Globe } from "lucide-react";
-import { fetchCompanyWithRelationships } from '../services/api';
+// import { fetchCompanyWithRelationships } from '../services/api';
 import { Link, useParams } from 'react-router-dom';
 
 export default function CompanyInformation({ companyId }) {

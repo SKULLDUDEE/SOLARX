@@ -1,81 +1,126 @@
 import React, { useState, useEffect } from 'react';
-import { fetchCompanyBusinessSummary } from '../services/api';
-import { getApiId } from '../utils/strapiHelper';
 
 export default function BusinessSummary({ companyId }) {
   const [businessData, setBusinessData] = useState(null);
   const [loading, setLoading] = useState(true);
   
+  // Function to parse rich text content
+  const parseRichText = (content) => {
+    if (!content) return '';
+    
+    // If it's a string, return it directly
+    if (typeof content === 'string') return content;
+    
+    // If it's an array (Strapi rich text format)
+    if (Array.isArray(content)) {
+      return content.map(block => {
+        if (block.children && Array.isArray(block.children)) {
+          return block.children.map(child => child.text || '').join('');
+        }
+        return '';
+      }).join('\n');
+    }
+    
+    // If we can't parse it, return empty string
+    return '';
+  };
+  
+  // Function to extract business features from rich text paragraphs
+  const extractFeaturesFromRichText = (richTextContent) => {
+    if (!richTextContent || !Array.isArray(richTextContent)) return [];
+    
+    const features = [];
+    
+    // Process each paragraph as a potential feature
+    richTextContent.forEach(paragraph => {
+      if (paragraph.children && Array.isArray(paragraph.children)) {
+        const text = paragraph.children.map(child => child.text || '').join('');
+        
+        // Check if the text contains a feature (has a title and description separated by a dash or hyphen)
+        const featureParts = text.split(/\s*-\s*/);
+        
+        if (featureParts.length >= 2) {
+          features.push({
+            title: featureParts[0].trim(),
+            description: featureParts.slice(1).join(' - ').trim()
+          });
+        }
+      }
+    });
+    
+    return features;
+  };
+  
   useEffect(() => {
     const fetchData = async () => {
       if (companyId) {
         try {
-          console.log(`BusinessSummary: Fetching data for company ID ${companyId}`);
           setLoading(true);
           
-          // Try the regular API service first
-          const data = await fetchCompanyBusinessSummary(companyId);
-          console.log(`BusinessSummary: Received data from API service:`, data);
+          // Fetch business summaries from API
+          const url = `http://localhost:1337/api/business-summaries`;
+          console.log("Fetching business summary from:", url);
           
-          // If we got data with some content, use it
-          if (data && (data.summary || data.overview || data.description || Object.keys(data).length > 1)) {
-            setBusinessData(data);
-          } 
-          // Otherwise, try to fetch the company data and use its introduction
-          else {
-            console.log("Trying to fetch company data for introduction");
-            try {
-              // Convert Strapi admin ID to API ID if needed
-              const apiId = getApiId(companyId);
-              console.log(`Fetching company data for ID: ${companyId} (API ID: ${apiId})`);
-              
-              // Get the company data with introduction field using filter query
-              const response = await fetch(`http://localhost:1337/api/companies?filters[id][$eq]=${apiId}`);
-              const result = await response.json();
-              console.log("Company data result:", result);
-              
-              if (result && result.data && result.data.length > 0) {
-                const companyData = result.data[0].attributes;
-                
-                // Extract introduction content from the rich text field
-                let introText = '';
-                if (companyData.introduction && Array.isArray(companyData.introduction)) {
-                  // Handle rich text format (array of blocks)
-                  introText = companyData.introduction
-                    .map(block => {
-                      if (block.children) {
-                        return block.children.map(child => child.text).join('');
-                      }
-                      return '';
-                    })
-                    .join('\n');
-                } else if (typeof companyData.introduction === 'string') {
-                  // Handle plain text format
-                  introText = companyData.introduction;
+          const response = await fetch(url);
+          const result = await response.json();
+          
+          console.log("Business summaries response:", result);
+          
+          if (result && result.data && result.data.length > 0) {
+            // Use the first business summary from the API
+            const businessSummary = result.data[0];
+            console.log("Found business summary:", businessSummary);
+            
+            // Get a simple summary from the first paragraph if available
+            let summaryText = "";
+            if (businessSummary.summary && Array.isArray(businessSummary.summary) && businessSummary.summary.length > 0) {
+              // Try to find a paragraph that doesn't look like a feature (doesn't have a dash)
+              const summaryParagraph = businessSummary.summary.find(p => {
+                if (p.children && Array.isArray(p.children)) {
+                  const text = p.children.map(child => child.text || '').join('');
+                  return !text.includes('-');
                 }
-                
-                const directData = {
-                  companyName: companyData.Name || 'Company Name',
-                  summary: introText || 'Our company is revolutionizing renewable energy access in developing regions.'
-                };
-                console.log("Using company introduction data:", directData);
-                setBusinessData(directData);
+                return false;
+              });
+              
+              if (summaryParagraph) {
+                summaryText = parseRichText([summaryParagraph]);
               } else {
-                // Use the original data as fallback
-                setBusinessData(data);
+                // If no suitable paragraph found, use a generic summary
+                summaryText = "Please add a summary paragraph in the Strapi admin panel.";
               }
-            } catch (directError) {
-              console.error("Error with direct fetch:", directError);
-              // Use the original data as fallback
-              setBusinessData(data);
             }
+            
+            // Extract features directly from the rich text summary paragraphs
+            console.log("Extracting features from rich text:", businessSummary.summary);
+            const features = extractFeaturesFromRichText(businessSummary.summary);
+            
+            console.log("Extracted features:", features);
+            
+            // Create the business data object with data from API only
+            const businessDataObj = {
+              companyName: 'Imagine Powertree', // Company name from API
+              summary: summaryText,
+              features: features
+            };
+            
+            setBusinessData(businessDataObj);
+          } else {
+            console.log("No business summaries found in the API response");
+            // Set empty data with a message to add data in Strapi
+            setBusinessData({
+              companyName: 'Company',
+              summary: 'No business summaries found. Please add business summary data in the Strapi admin panel.',
+              features: [] // No features if not found in API
+            });
           }
         } catch (error) {
           console.error("Error fetching business summary:", error);
-          // Set default data
+          // Set error state data with no features and no hardcoded data
           setBusinessData({
-            companyName: 'Our Company',
-            summary: 'Our company is revolutionizing renewable energy access in developing regions.'
+            companyName: 'Error Loading Data',
+            summary: 'There was an error loading the business summary. Please check your API connection and try again.',
+            features: [] // No features if API request failed
           });
         } finally {
           setLoading(false);
@@ -99,133 +144,49 @@ export default function BusinessSummary({ companyId }) {
       )}
       
       {!loading && businessData && (
-        (() => {
-          console.log("BusinessSummary: Available fields:", Object.keys(businessData));
+        <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
+          <p className="text-lg text-gray-700 mb-8">{businessData.summary}</p>
           
-          // Extract data from different possible structures
-          let summary = "";
-          
-          // Check if businessData is a string
-          if (typeof businessData === 'string') {
-            summary = businessData;
-          } 
-          // Check if it's an object with expected fields
-          else if (typeof businessData === 'object') {
-            summary = businessData.overview || businessData.summary || businessData.description || 
-              `${businessData.companyName || 'Our company'} is revolutionizing renewable energy access in developing regions through innovative solar panel technology that's more efficient and less expensive than traditional solutions.`;
-          }
-          // Fallback
-          else {
-            summary = `Our company is revolutionizing renewable energy access in developing regions through innovative solar panel technology that's more efficient and less expensive than traditional solutions.`;
-          }
-          
-          // Try to extract features from different possible structures
-          let features = [];
-          
-          // If we have specific feature fields
-          if (businessData.efficiency || businessData.costEffectiveness || 
-              businessData.sustainability || businessData.additionalFeature) {
-            features = [
-              {
-                title: businessData.efficiency?.title || "Efficiency",
-                description: businessData.efficiency?.description || 
-                  "Our innovative technology maximizes output even in challenging conditions."
-              },
-              {
-                title: businessData.costEffectiveness?.title || "Cost Effectiveness",
-                description: businessData.costEffectiveness?.description || 
-                  "Our solutions are designed to be cost-effective, making them more accessible."
-              },
-              {
-                title: businessData.sustainability?.title || "Sustainability",
-                description: businessData.sustainability?.description || 
-                  "Our approach prioritizes sustainability and environmental responsibility."
-              },
-              {
-                title: businessData.additionalFeature?.title || "Carbon Footprint",
-                description: businessData.additionalFeature?.description || 
-                  "We're committed to reducing carbon footprint and contributing to climate change mitigation."
-              }
-            ];
-          } 
-          // If we have a features array
-          else if (Array.isArray(businessData.features) && businessData.features.length > 0) {
-            features = businessData.features.map(feature => ({
-              title: feature.title || feature.name || "Feature",
-              description: feature.description || feature.text || "Feature description"
-            }));
-          }
-          // If we have key_points array
-          else if (Array.isArray(businessData.key_points) && businessData.key_points.length > 0) {
-            features = businessData.key_points.map(point => ({
-              title: point.title || point.name || "Key Point",
-              description: point.description || point.text || "Key point description"
-            }));
-          }
-          // Default features if none found
-          else {
-            features = [
-              { title: "Efficiency", description: "Our innovative technology maximizes output even in challenging conditions." },
-              { title: "Cost Effectiveness", description: "Our solutions are designed to be cost-effective, making them more accessible." },
-              { title: "Sustainability", description: "Our approach prioritizes sustainability and environmental responsibility." },
-              { title: "Carbon Footprint", description: "We're committed to reducing carbon footprint and contributing to climate change mitigation." }
-            ];
-          }
-          
-          return (
-            <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
-              <p className="text-lg text-gray-700 mb-8">{summary}</p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {features.slice(0, 4).map((feature, index) => (
-                  <div key={index} className="border border-gray-100 rounded-lg p-6">
-                    <h2 className="text-2xl font-semibold text-orange-500 mb-4">
-                      {feature.title}
-                    </h2>
-                    <p className="text-gray-700">
-                      {feature.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
+          {businessData.features.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {businessData.features.slice(0, 4).map((feature, index) => (
+                <div key={index} className="border border-gray-100 rounded-lg p-6">
+                  <h2 className="text-2xl font-semibold text-orange-500 mb-4">
+                    {feature.title}
+                  </h2>
+                  <p className="text-gray-700">
+                    {feature.description}
+                  </p>
+                </div>
+              ))}
             </div>
-          );
-        })()
+          ) : (
+            <div className="bg-orange-50 border border-orange-100 rounded-lg p-6 text-center">
+              <h3 className="text-xl font-medium text-orange-700 mb-2">No Business Features Available</h3>
+              <p className="text-orange-600">
+                Please add business features in the Strapi admin panel under Business Summary.
+              </p>
+            </div>
+          )}
+        </div>
       )}
       
-      {!loading && (!businessData || (typeof businessData === 'object' && Object.keys(businessData).length === 0)) && (
+      {!loading && !businessData && (
         <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
-          <p className="text-lg text-gray-700 mb-8">
-            Our company is revolutionizing renewable energy access in developing regions through innovative solar panel technology that's more efficient and less expensive than traditional solutions.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border border-gray-100 rounded-lg p-6">
-              <h2 className="text-2xl font-semibold text-orange-500 mb-4">Efficiency</h2>
-              <p className="text-gray-700">
-                Our innovative technology maximizes output even in challenging conditions.
-              </p>
-            </div>
-            
-            <div className="border border-gray-100 rounded-lg p-6">
-              <h2 className="text-2xl font-semibold text-orange-500 mb-4">Cost Effectiveness</h2>
-              <p className="text-gray-700">
-                Our solutions are designed to be cost-effective, making them more accessible.
-              </p>
-            </div>
-            
-            <div className="border border-gray-100 rounded-lg p-6">
-              <h2 className="text-2xl font-semibold text-orange-500 mb-4">Sustainability</h2>
-              <p className="text-gray-700">
-                Our approach prioritizes sustainability and environmental responsibility.
-              </p>
-            </div>
-            
-            <div className="border border-gray-100 rounded-lg p-6">
-              <h2 className="text-2xl font-semibold text-orange-500 mb-4">Carbon Footprint</h2>
-              <p className="text-gray-700">
-                We're committed to reducing carbon footprint and contributing to climate change mitigation.
-              </p>
+          <div className="bg-orange-50 border border-orange-100 rounded-lg p-8 text-center">
+            <h3 className="text-xl font-medium text-orange-700 mb-4">No Business Summary Available</h3>
+            <p className="text-orange-600 mb-4">
+              Please add business summary data in the Strapi admin panel for this company.
+            </p>
+            <div className="flex justify-center">
+              <a 
+                href="http://localhost:1337/admin/content-manager/collectionType/api::business-summary.business-summary/create"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md transition-colors duration-300"
+              >
+                Add Business Summary
+              </a>
             </div>
           </div>
         </div>

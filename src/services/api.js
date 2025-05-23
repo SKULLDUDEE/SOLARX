@@ -109,9 +109,8 @@ export const fetchCompanyWithRelationships = async (id) => {
         // Return the company data directly
         const companyData = data.data[0];
         
-        // Check if the data has attributes property or if fields are directly on the object
-        // This handles different Strapi API response formats
-        const hasAttributes = companyData.hasOwnProperty('attributes');
+      
+        const hasAttributes = Object.prototype.hasOwnProperty.call(companyData, 'attributes');
         const fields = hasAttributes ? companyData.attributes : companyData;
         
         console.log(`Company data structure for ID ${id}:`, companyData);
@@ -805,7 +804,7 @@ export const fetchCompanyImpactMetrics = async (id) => {
       const companyData = result.data[0];
       
       // Check if the data has attributes property or if fields are directly on the object
-      const hasAttributes = companyData.hasOwnProperty('attributes');
+      const hasAttributes = Object.prototype.hasOwnProperty.call(companyData, 'attributes');
       const fields = hasAttributes ? companyData.attributes : companyData;
       
       console.log("Impact metrics company data:", companyData);
@@ -871,5 +870,21 @@ export const fetchCompanyTeam = async (id) => {
   } catch (error) {
     console.error(`Error in fetchCompanyTeam for ID ${id}:`, error);
     return { founders: [] };
+  }
+};
+
+// Fetch mentors data (from founders endpoint)
+export const fetchMentors = async () => {
+  try {
+    // Using the founders endpoint which contains the mentor data
+    const response = await axios.get(`${API_URL}/founders?populate=*`);
+    
+    // Log the response to help with debugging
+    console.log('Mentors API response (from founders):', response.data);
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching mentors data:', error);
+    throw error;
   }
 };
