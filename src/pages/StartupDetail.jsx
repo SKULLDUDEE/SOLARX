@@ -14,6 +14,7 @@ import SuccessStoriesSlider from '../components/SuccessStoriesSlider';
 import PressFeaturesSection from '../components/PressFeaturesSection';
 import CompanyTimelineSection from '../components/CompanyTimelineSection';
 import ProjectGallery from '../components/ProjectGallery';
+import GlobalPresence from '../components/GlobalPresence';
 import Footer from '../components/Footer';
 
 export default function StartupDetail() {
@@ -115,6 +116,7 @@ export default function StartupDetail() {
       <PressFeaturesSection companyId={id} />
       <ProjectGallery companyId={id} />
       <CompanyTimelineSection companyId={id} />
+      <GlobalPresence companyId={id} />
       
       <Footer />
 

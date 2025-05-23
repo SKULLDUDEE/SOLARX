@@ -14,6 +14,7 @@ import SolarXApplicationSection from './components/SolarXApplicationSection'
 import AboutSolarXChallenge from './components/AboutSolarXChallenge'
 import GlobalImpactSection from './components/GlobalImpactSection'
 import ProjectTimeline from './components/ProjectTimeline'
+import SolarXGlobalReach from './components/SolarXGlobalReach'
 function App() {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -49,6 +50,7 @@ function App() {
         <AboutSolarXChallenge isMobile={isMobile} />
         <GlobalImpactSection isMobile={isMobile} />
         <ProjectTimeline isMobile={isMobile} />
+        <SolarXGlobalReach isMobile={isMobile} />
         <Footer />
       </div>
     </div>
