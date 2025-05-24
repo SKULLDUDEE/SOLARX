@@ -22,12 +22,12 @@ export default function StartupDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  console.log("StartupDetail - Company ID from URL:", id);
+  // console.log("StartupDetail - Company ID from URL:", id);
   
   // Log the ID to make sure it's being passed correctly
-  useEffect(() => {
-    console.log("StartupDetail - Using company ID:", id);
-  }, [id]);
+  // useEffect(() => {
+  //   console.log("StartupDetail - Using company ID:", id);
+  // }, [id]);
   
   // Check if the company exists
   useEffect(() => {
@@ -35,22 +35,22 @@ export default function StartupDetail() {
       if (id) {
         try {
           setLoading(true);
-          console.log(`StartupDetail - Checking if company exists with ID: ${id}`);
+          // console.log(`StartupDetail - Checking if company exists with ID: ${id}`);
           
           // First get all companies to see what's available
           try {
-            const allCompaniesResponse = await fetch(`http://localhost:1337/api/companies`);
+            const allCompaniesResponse = await fetch(`http://localhost:1337/api/startups`);
             const allCompanies = await allCompaniesResponse.json();
-            console.log("StartupDetail - All available companies:", allCompanies);
+            // console.log("StartupDetail - All available companies:", allCompanies);
             
             if (allCompanies && allCompanies.data) {
-              console.log(`StartupDetail - Available company IDs: ${allCompanies.data.map(c => c.id).join(', ')}`);
+              // console.log(`StartupDetail - Available company IDs: ${allCompanies.data.map(c => c.id).join(', ')}`);
             }
           } catch (listError) {
             console.error("StartupDetail - Error fetching company list:", listError);
           }
           
-          const response = await fetch(`http://localhost:1337/api/companies?filters[id][$eq]=${id}&populate=*`);
+          const response = await fetch(`http://localhost:1337/api/startups?filters[id][$eq]=${id}&populate=*`);
           const data = await response.json();
           
           if (!(data && data.data && data.data.length > 0)) {
@@ -111,12 +111,11 @@ export default function StartupDetail() {
       <TechnologySection companyId={id} />
       <ImpactMetrics companyId={id} />
       <FundingJourney companyId={id} />
-      <ClimateImpactMetrics companyId={id} />
-      <SuccessStoriesSlider companyId={id} />
+      {/* <SuccessStoriesSlider companyId={id} /> */}
       <PressFeaturesSection companyId={id} />
       <ProjectGallery companyId={id} />
-      <CompanyTimelineSection companyId={id} />
-      <GlobalPresence companyId={id} />
+      {/* <CompanyTimelineSection companyId={id} /> */}
+      <GlobalPresence companyId={id} /> 
       
       <Footer />
 

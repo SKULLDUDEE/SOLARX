@@ -35,7 +35,7 @@ function App() {
 
   return (
     <div className="relative">
-      <WelcomeBanner />
+      {/* <WelcomeBanner /> */}
       <SolarXNavbar isMobile={isMobile} />
      
       <div className="relative">
@@ -46,10 +46,10 @@ function App() {
         <SuccessStories isMobile={isMobile} />
         <MediaCoverageSection isMobile={isMobile} />
         <SolarXPromotionalSlider isMobile={isMobile} />
-        <SolarXApplicationSection isMobile={isMobile} />
+        {/* <SolarXApplicationSection isMobile={isMobile} /> */}
         <AboutSolarXChallenge isMobile={isMobile} />
         <GlobalImpactSection isMobile={isMobile} />
-        <ProjectTimeline isMobile={isMobile} />
+        {/* <ProjectTimeline isMobile={isMobile} /> */}
         <SolarXGlobalReach isMobile={isMobile} />
         <Footer />
       </div>

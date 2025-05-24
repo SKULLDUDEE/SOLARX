@@ -1,5 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Building2, DollarSign, Zap, Globe, Shield, FlaskConical } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  Building2,
+  DollarSign,
+  Zap,
+  Globe,
+  Shield,
+  FlaskConical,
+} from "lucide-react";
 
 export default function FundingInvestorsDashboard() {
   const [fundingData, setFundingData] = useState([]);
@@ -10,172 +17,105 @@ export default function FundingInvestorsDashboard() {
   const [focusAreas, setFocusAreas] = useState([]); // state for focus areas
 
   // Function to parse funding data from rich text
-  const parseFundingData = (richTextContent) => {
-    if (!richTextContent || !Array.isArray(richTextContent)) return [];
+  const parseFundingData = (fundingItem) => {
+    const { Round, Amount_Raised, Date, Reason, investors } = fundingItem;
 
-    const fundingRounds = [];
-    const fundingByType = {};
-    let totalAmount = 0;
+    const reasonText = (Reason || [])
+      .map((paragraph) =>
+        (paragraph.children || []).map((child) => child.text || "").join("")
+      )
+      .join(" ")
+      .trim();
 
-    richTextContent.forEach(paragraph => {
-      if (paragraph.children && Array.isArray(paragraph.children)) {
-        const text = paragraph.children.map(child => child.text || '').join('');
+    const amount = parseFloat(Amount_Raised || 0);
 
-        if (!text.trim()) return;
-
-        const fundingMatch = text.match(/([^-]+)-\s*([0-9,.]+)\s*USD\s*-\s*([^-]+)-\s*(.+)/i);
-
-        if (fundingMatch) {
-          const type = fundingMatch[1].trim();
-          const amountStr = fundingMatch[2].trim().replace(/,/g, '');
-          const amount = parseFloat(amountStr);
-          const date = fundingMatch[3].trim();
-          const source = fundingMatch[4].trim();
-
-          fundingRounds.push({
-            type,
-            amount,
-            amountFormatted: `$${(amount / 1000).toFixed(1)}K`,
-            date,
-            source
-          });
-
-          if (!fundingByType[type]) {
-            fundingByType[type] = 0;
-          }
-          fundingByType[type] += amount;
-
-          totalAmount += amount;
-        } else if (text.includes('Bank Loans')) {
-          const loanMatch = text.match(/\$([0-9,.]+)\s*USD\s*-\s*(.+)/i);
-          if (loanMatch) {
-            const amount = parseFloat(loanMatch[1].replace(/,/g, ''));
-            const source = loanMatch[2].trim();
-
-            fundingRounds.push({
-              type: 'Bank Loan',
-              amount,
-              amountFormatted: `$${(amount / 1000).toFixed(1)}K`,
-              date: '',
-              source
-            });
-
-            if (!fundingByType['Bank Loan']) {
-              fundingByType['Bank Loan'] = 0;
-            }
-            fundingByType['Bank Loan'] += amount;
-
-            totalAmount += amount;
-          }
-        }
-      }
-    });
-
-    const aggregatedData = Object.keys(fundingByType).map(type => {
-      const amount = fundingByType[type];
-      const percentage = (amount / totalAmount) * 100;
-      let widthClass = 'w-0';
-
-      if (percentage <= 5) widthClass = 'w-[5%]';
-      else if (percentage <= 10) widthClass = 'w-[10%]';
-      else if (percentage <= 15) widthClass = 'w-[15%]';
-      else if (percentage <= 20) widthClass = 'w-[20%]';
-      else if (percentage <= 25) widthClass = 'w-1/4';
-      else if (percentage <= 30) widthClass = 'w-[30%]';
-      else if (percentage <= 33) widthClass = 'w-1/3';
-      else if (percentage <= 40) widthClass = 'w-2/5';
-      else if (percentage <= 50) widthClass = 'w-1/2';
-      else if (percentage <= 60) widthClass = 'w-3/5';
-      else if (percentage <= 66) widthClass = 'w-2/3';
-      else if (percentage <= 75) widthClass = 'w-3/4';
-      else if (percentage <= 80) widthClass = 'w-4/5';
-      else if (percentage <= 90) widthClass = 'w-[90%]';
-      else widthClass = 'w-full';
-
-      return {
-        type,
-        amount: `$${(amount / 1000).toFixed(1)}K`,
-        width: widthClass,
-        percentage: percentage.toFixed(1)
-      };
-    });
-
-    return {
-      rounds: fundingRounds,
-      aggregated: aggregatedData,
-      total: totalAmount
+    const round = {
+      type: Round || "Unknown",
+      amount,
+      amountFormatted: `$${(amount / 1000).toFixed(1)}K`,
+      date: Date || "",
+      source: investors && investors.length > 0 ? investors[0].Name : "Unknown",
+      reason: reasonText,
     };
+
+    return round;
   };
 
   useEffect(() => {
     const fetchFundingData = async () => {
       try {
-        setLoading(true);
-
-        const response = await fetch('http://localhost:1337/api/fundings');
+        const response = await fetch(
+          "http://localhost:1337/api/fundings?populate=*"
+        );
         const result = await response.json();
 
-        if (result && result.data && result.data.length > 0) {
+        if (result?.data?.length > 0) {
           let allRounds = [];
           let totalAmount = 0;
           let allInvestorsSet = new Set();
 
-          result.data.forEach(fundingItem => {
-            const parsedData = parseFundingData(fundingItem.reason);
-            if (parsedData && parsedData.rounds) {
-              allRounds = allRounds.concat(parsedData.rounds);
-              totalAmount += parsedData.total;
+          result.data.forEach((item) => {
+            const round = parseFundingData(item);
+            allRounds.push(round);
+            totalAmount += round.amount;
 
-              parsedData.rounds.forEach(round => {
-                if (round.source) {
-                  allInvestorsSet.add(round.source);
-                }
-              });
+            if (round.source) {
+              allInvestorsSet.add(round.source);
             }
           });
 
           const fundingByType = {};
-          allRounds.forEach(round => {
+          allRounds.forEach((round) => {
             if (!fundingByType[round.type]) {
               fundingByType[round.type] = 0;
             }
             fundingByType[round.type] += round.amount;
           });
 
-          const aggregatedData = Object.keys(fundingByType).map(type => {
-            const amount = fundingByType[type];
-            const percentage = (amount / totalAmount) * 100;
-            let widthClass = 'w-0';
+          const getWidthClass = (percentage) => {
+            if (percentage <= 5) return "w-[5%]";
+            if (percentage <= 10) return "w-[10%]";
+            if (percentage <= 15) return "w-[15%]";
+            if (percentage <= 20) return "w-[20%]";
+            if (percentage <= 25) return "w-1/4";
+            if (percentage <= 30) return "w-[30%]";
+            if (percentage <= 33) return "w-1/3";
+            if (percentage <= 40) return "w-2/5";
+            if (percentage <= 50) return "w-1/2";
+            if (percentage <= 60) return "w-3/5";
+            if (percentage <= 66) return "w-2/3";
+            if (percentage <= 75) return "w-3/4";
+            if (percentage <= 80) return "w-4/5";
+            if (percentage <= 90) return "w-[90%]";
+            return "w-full";
+          };
 
-            if (percentage <= 5) widthClass = 'w-[5%]';
-            else if (percentage <= 10) widthClass = 'w-[10%]';
-            else if (percentage <= 15) widthClass = 'w-[15%]';
-            else if (percentage <= 20) widthClass = 'w-[20%]';
-            else if (percentage <= 25) widthClass = 'w-1/4';
-            else if (percentage <= 30) widthClass = 'w-[30%]';
-            else if (percentage <= 33) widthClass = 'w-1/3';
-            else if (percentage <= 40) widthClass = 'w-2/5';
-            else if (percentage <= 50) widthClass = 'w-1/2';
-            else if (percentage <= 60) widthClass = 'w-3/5';
-            else if (percentage <= 66) widthClass = 'w-2/3';
-            else if (percentage <= 75) widthClass = 'w-3/4';
-            else if (percentage <= 80) widthClass = 'w-4/5';
-            else if (percentage <= 90) widthClass = 'w-[90%]';
-            else widthClass = 'w-full';
+          const aggregatedData = Object.entries(fundingByType).map(
+            ([type, amount]) => {
+              const percentage = (amount / totalAmount) * 100;
+              return {
+                type,
+                amount: `$${(amount / 1000).toFixed(1)}K`,
+                width: getWidthClass(percentage),
+                percentage: percentage.toFixed(1),
+              };
+            }
+          );
 
-            return {
-              type,
-              amount: `$${(amount / 1000).toFixed(1)}K`,
-              width: widthClass,
-              percentage: percentage.toFixed(1)
-            };
-          });
-
-          const iconMap = [Building2, DollarSign, Zap, Globe, Shield, FlaskConical];
-          const investorsArray = Array.from(allInvestorsSet).slice(0, 6).map((name, index) => ({
-            name,
-            icon: iconMap[index % iconMap.length]
-          }));
+          const iconMap = [
+            Building2,
+            DollarSign,
+            Zap,
+            Globe,
+            Shield,
+            FlaskConical,
+          ];
+          const investorsArray = Array.from(allInvestorsSet)
+            .slice(0, 6)
+            .map((name, index) => ({
+              name,
+              icon: iconMap[index % iconMap.length],
+            }));
 
           setFundingData(aggregatedData);
           setTotalFunding(totalAmount);
@@ -210,7 +150,8 @@ export default function FundingInvestorsDashboard() {
           </h1>
           <div className="w-16 h-1 bg-orange-500 mx-auto mb-6"></div>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Mobilizing capital to accelerate solar innovation and deployment across emerging markets.
+            Mobilizing capital to accelerate solar innovation and deployment
+            across emerging markets.
           </p>
         </div>
 
@@ -234,16 +175,27 @@ export default function FundingInvestorsDashboard() {
                 <div className="space-y-4">
                   {fundingData.length > 0 ? (
                     fundingData.map((item, index) => (
-                      <div key={index} className="flex items-center justify-between">
+                      <div
+                        key={index}
+                        className="flex items-center justify-between"
+                      >
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-gray-700 font-medium">{item.type}</span>
-                            <span className="text-orange-600 font-semibold">{item.amount}</span>
+                            <span className="text-gray-700 font-medium">
+                              {item.type}
+                            </span>
+                            <span className="text-orange-600 font-semibold">
+                              {item.amount}
+                            </span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div className={`bg-orange-500 h-2 rounded-full ${item.width}`}></div>
+                            <div
+                              className={`bg-orange-500 h-2 rounded-full ${item.width}`}
+                            ></div>
                           </div>
-                          <div className="text-xs text-gray-500 text-right mt-1">{item.percentage}%</div>
+                          <div className="text-xs text-gray-500 text-right mt-1">
+                            {item.percentage}%
+                          </div>
                         </div>
                       </div>
                     ))

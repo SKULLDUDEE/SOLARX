@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Shield } from 'lucide-react';
+import React, { useState } from "react";
+import { ChevronLeft, ChevronRight, Shield } from "lucide-react";
 
 const SuccessStoriesSlider = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -10,38 +10,44 @@ const SuccessStoriesSlider = () => {
       id: 1,
       title: "Transforming Rural Healthcare",
       location: "Kisumu County, Kenya",
-      description: "Enabled 24/7 power for 12 rural clinics, increasing patient capacity by 40%"
+      description:
+        "Enabled 24/7 power for 12 rural clinics, increasing patient capacity by 40%",
     },
     {
       id: 2,
       title: "Empowering Women Entrepreneurs",
       location: "Dar es Salaam, Tanzania",
-      description: "Provided reliable energy for 200+ women-owned businesses, increasing average income by 35%"
+      description:
+        "Provided reliable energy for 200+ women-owned businesses, increasing average income by 35%",
     },
     {
       id: 3,
       title: "Educational Revolution",
       location: "Northern Ghana",
-      description: "Powered 35 schools, enabling digital learning for 12,000+ students"
+      description:
+        "Powered 35 schools, enabling digital learning for 12,000+ students",
     },
     {
       id: 4,
       title: "Clean Water Initiative",
       location: "Rural Uganda",
-      description: "Solar-powered water purification systems serving 50,000+ people daily"
+      description:
+        "Solar-powered water purification systems serving 50,000+ people daily",
     },
     {
       id: 5,
       title: "Agricultural Innovation",
       location: "Central Kenya",
-      description: "Smart irrigation systems increased crop yields by 60% for 500+ farmers"
+      description:
+        "Smart irrigation systems increased crop yields by 60% for 500+ farmers",
     },
     {
       id: 6,
       title: "Community Digital Hub",
       location: "Lagos, Nigeria",
-      description: "Connected 25 communities with reliable internet and digital services"
-    }
+      description:
+        "Connected 25 communities with reliable internet and digital services",
+    },
   ];
 
   const cardsPerView = 3;
@@ -49,13 +55,13 @@ const SuccessStoriesSlider = () => {
   const showSlider = successStories.length > cardsPerView;
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => 
+    setCurrentIndex((prevIndex) =>
       prevIndex === totalSlides - 1 ? 0 : prevIndex + 1
     );
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => 
+    setCurrentIndex((prevIndex) =>
       prevIndex === 0 ? totalSlides - 1 : prevIndex - 1
     );
   };
@@ -69,8 +75,12 @@ const SuccessStoriesSlider = () => {
     <div className="w-full max-w-7xl mx-auto px-4 py-12">
       {/* Header */}
       <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">Success Stories</h2>
-        <p className="text-lg text-gray-600">Real-world impact through our sustainable energy solutions.</p>
+        <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          Success Stories
+        </h2>
+        <p className="text-lg text-gray-600">
+          Real-world impact through our sustainable energy solutions.
+        </p>
       </div>
 
       {/* Cards Container */}
@@ -136,8 +146,8 @@ const SuccessStoriesSlider = () => {
                 onClick={() => setCurrentIndex(index)}
                 className={`w-3 h-3 rounded-full transition-colors duration-200 ${
                   index === currentIndex
-                    ? 'bg-orange-500'
-                    : 'bg-gray-300 hover:bg-gray-400'
+                    ? "bg-orange-500"
+                    : "bg-gray-300 hover:bg-gray-400"
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               />
@@ -145,8 +155,6 @@ const SuccessStoriesSlider = () => {
           </div>
         )}
       </div>
-
-      
     </div>
   );
 };

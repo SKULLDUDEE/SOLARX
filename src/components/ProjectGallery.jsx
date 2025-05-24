@@ -1,300 +1,298 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  FileText,
+} from "lucide-react";
 
-const ProjectGallery = () => {
+// Helper function to extract plain text from Strapi's rich text format
+const extractRichTextToString = (richTextArray) => {
+  let text = "";
+  if (Array.isArray(richTextArray)) {
+    richTextArray.forEach((block) => {
+      if (block.children && Array.isArray(block.children)) {
+        block.children.forEach((child) => {
+          if (child.text) {
+            text += child.text + " ";
+          }
+          // Optional: Handle nested children if your structure is deeper
+          if (child.children && Array.isArray(child.children)) {
+            child.children.forEach((grandchild) => {
+              if (grandchild.text) {
+                text += grandchild.text + " ";
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+  return text.trim();
+};
+
+const ProjectGallery = ({ companyId }) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  
-  // Fetch projects from Strapi API
+
   useEffect(() => {
     const fetchProjects = async () => {
+      if (!companyId) {
+        setError("Company ID is required to fetch projects.");
+        setLoading(false);
+        setProjects([]);
+        return;
+      }
       try {
         setLoading(true);
-        // Use populate=* to get all related data including images
-        const response = await fetch('http://localhost:1337/api/projects?populate=*');
-        
-        if (!response.ok) {
-          throw new Error(`API request failed with status ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Projects data from API:', data);
-        
-        // Process the projects data
-        if (data && data.data && data.data.length > 0) {
-          // Transform the API data into the format we need
-          const processedProjects = data.data.map((project, index) => {
-            // Extract description text from the rich text format
-            let descriptionText = '';
-if (project.description && Array.isArray(project.description)) {
-  project.description.forEach(block => {
-    if (block.children) {
-      block.children.forEach(child => {
-        if (child.text && !child.text.includes('http')) {
-          descriptionText += child.text + ' ';
-        } else if (child.children) {
-          child.children.forEach(grandchild => {
-            if (grandchild.text && !grandchild.text.includes('http')) {
-              descriptionText += grandchild.text + ' ';
-            }
-          });
-        }
-      });
-    }
-  });
-}
+        setError(null);
 
-            
-            // If we couldn't extract a description, use a default
-            if (!descriptionText.trim()) {
-              descriptionText = 'View project details and documentation';
+        const apiUrl = `http://localhost:1337/api/projects?filters[startup][id][$eq]=${companyId}&populate[0]=Banner_Image&populate[1]=startup`;
+        // console.log('Fetching projects from:', apiUrl);
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          const errorMessage =
+            errorData?.error?.message ||
+            `API request failed: ${response.status} ${response.statusText}`;
+          throw new Error(errorMessage);
+        }
+
+        const result = await response.json();
+        console.log("Projects data from API:", result);
+
+        if (result && result.data && result.data.length > 0) {
+          const processedProjects = result.data.map((apiProject) => {
+            const overviewText =
+              extractRichTextToString(apiProject.Overview) ||
+              apiProject.One_Line_Description ||
+              "No detailed overview available.";
+
+            let imageUrl = null;
+            let imageAlt = apiProject.Name || "Project image";
+            if (apiProject.Banner_Image) {
+              const img = apiProject.Banner_Image;
+              const rawUrl =
+                img.formats?.medium?.url || img.formats?.small?.url || img.url;
+              imageUrl = rawUrl ? `http://localhost:1337${rawUrl}` : null;
+              imageAlt = img.alternativeText || img.name || imageAlt;
             }
-            
-            // Extract image if available
-            let image = null;
-            if (project.documents && project.documents.length > 0) {
-              const doc = project.documents[0];
-              // Use medium format if available, otherwise use the original
-              const imageUrl = doc.formats?.medium?.url || doc.url;
-              
-              // Construct the full URL (Strapi returns relative URLs)
-              image = {
-                url: `http://localhost:1337${imageUrl}`,
-                alt: doc.name || 'Project image',
-                width: doc.formats?.medium?.width || doc.width,
-                height: doc.formats?.medium?.height || doc.height
-              };
-            }
-            
+
             return {
-              id: project.id,
-              title: `Project ${index + 1}`,
-              name: project.title || `Solar Project ${index + 1}`,
-              description: descriptionText.trim(),
-              // Extract any links or additional data if available
-              links: extractLinks(project),
-              image: image
+              id: apiProject.id,
+              name: apiProject.Name || `Project ${apiProject.id}`,
+              description: overviewText,
+              oneLiner: apiProject.One_Line_Description || "",
+              image: imageUrl ? { url: imageUrl, alt: imageAlt } : null,
+              externalUrl: apiProject.URL || null, // Main project URL
             };
           });
-          
+
           setProjects(processedProjects);
         } else {
-          // If no projects are found, create some placeholder projects
-          // This ensures the component still works even with no data
-          setProjects([
-            {
-              id: 'placeholder-1',
-              title: 'New Project',
-              name: 'Solar Installation',
-              description: 'Details about this project will be added soon.'
-            }
-          ]);
+          console.log(`No projects found for companyId: ${companyId}.`);
+          // Provide a specific message if no projects, rather than placeholders if not desired
+          setProjects([]); // Or set placeholder if required by design
+          // setError(`No projects found for this company.`); // Optionally set error for no data
         }
       } catch (err) {
-        console.error('Error fetching projects:', err);
-        setError(err.message);
-        
-        // Set fallback projects in case of error
-        setProjects([
-          {
-            id: 'error-1',
-            title: 'Project Data',
-            name: 'Project Information',
-            description: 'Unable to load project data. Please try again later.'
-          }
-        ]);
+        console.error("Error fetching projects:", err);
+        setError(
+          err.message || "An unknown error occurred while fetching projects."
+        );
+        setProjects([]); // Clear projects on error
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchProjects();
-  }, []);
-  
-  // Helper function to extract links from project data
-  const extractLinks = (project) => {
-    // Use a Set to avoid duplicate links
-    const linkSet = new Set();
-    
-    // Try to extract links from description
-    if (project.description && Array.isArray(project.description)) {
-      project.description.forEach(block => {
-        if (block.children) {
-          block.children.forEach(child => {
-            if (child.url) {
-              linkSet.add(child.url);
-            } else if (child.children) {
-              child.children.forEach(grandchild => {
-                if (grandchild.url) {
-                  linkSet.add(grandchild.url);
-                }
-              });
-            }
-          });
-        }
-      });
+  }, [companyId]);
+
+  const itemsPerView = 3; // Number of projects visible at a time
+  const totalItems = projects.length;
+
+  // Adjust itemsPerView based on screen size for responsiveness
+  const getResponsiveItemsPerView = () => {
+    if (typeof window !== "undefined") {
+      if (window.innerWidth < 768) return 1; // Small screens
+      if (window.innerWidth < 1024) return 2; // Medium screens
     }
-    
-    // Convert Set back to array
-    return Array.from(linkSet);
+    return 3; // Large screens
   };
 
-  const itemsPerView = 3;
-  const totalItems = projects.length;
-  const showSlider = totalItems > itemsPerView;
-  const maxIndex = Math.max(0, totalItems - itemsPerView);
+  const [effectiveItemsPerView, setEffectiveItemsPerView] = useState(
+    getResponsiveItemsPerView()
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setEffectiveItemsPerView(getResponsiveItemsPerView());
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", handleResize);
+      handleResize(); // Initial check
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
+  const showSlider = totalItems > effectiveItemsPerView;
+  const maxIndex = Math.max(0, totalItems - effectiveItemsPerView);
 
   const goToPrevious = () => {
-    setCurrentIndex(prev => Math.max(0, prev - 1));
+    setCurrentIndex((prev) => Math.max(0, prev - 1));
   };
 
   const goToNext = () => {
-    setCurrentIndex(prev => Math.min(maxIndex, prev + 1));
+    setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
   };
 
-  const visibleProjects = projects.slice(currentIndex, currentIndex + itemsPerView);
+  // Calculate visible projects based on currentIndex and *effective* itemsPerView
+  const visibleProjects = projects.slice(
+    currentIndex,
+    currentIndex + effectiveItemsPerView
+  );
+
+  // Fallback content if no projects are loaded or available
+  const renderFallbackContent = () => {
+    if (projects.length === 0 && !error) {
+      // No projects, no error
+      return (
+        <div className="text-center py-10 bg-gray-50 rounded-lg">
+          <FileText size={48} className="mx-auto text-gray-400 mb-4" />
+          <h3 className="text-xl font-semibold text-gray-700">
+            No Projects Yet
+          </h3>
+          <p className="text-gray-500">
+            This company hasn't added any projects to their gallery.
+          </p>
+        </div>
+      );
+    }
+    return null; // Error/loading handled separately
+  };
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="mb-10 text-center sm:text-left">
+        <h2 className="text-3xl font-bold text-gray-800 inline-block relative">
           Project Gallery
+          <span className="block w-20 h-1 bg-orange-500 mt-2 mx-auto sm:mx-0"></span>
         </h2>
+        {projects.length > 0 && projects[0].oneLiner && (
+          <p className="mt-3 text-lg text-gray-600">{projects[0].oneLiner}</p>
+        )}
       </div>
 
-      {/* Loading State */}
       {loading && (
-        <div className="flex justify-center items-center py-20">
+        <div className="flex flex-col justify-center items-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+          <p className="mt-4 text-gray-700">Loading projects...</p>
         </div>
       )}
 
-      {/* Error State */}
       {error && !loading && (
-        <div className="bg-red-100 text-red-700 p-4 rounded-lg max-w-2xl mx-auto mb-8">
-          <p className="font-medium">Error loading projects:</p>
-          <p>{error}</p>
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative max-w-2xl mx-auto mb-8"
+          role="alert"
+        >
+          <strong className="font-bold">Error! </strong>
+          <span className="block sm:inline">{error}</span>
         </div>
       )}
 
-      {/* Gallery Container - Only show when data is loaded */}
-      {!loading && (
+      {!loading && !error && projects.length === 0 && renderFallbackContent()}
+
+      {!loading && !error && projects.length > 0 && (
         <div className="relative">
-          {/* Navigation Buttons - Only show if slider is needed */}
           {showSlider && (
             <>
               <button
                 onClick={goToPrevious}
                 disabled={currentIndex === 0}
-                className={`absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-10 p-2 rounded-full shadow-lg transition-all duration-200 ${
-                  currentIndex === 0 
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-xl'
+                className={`absolute left-0 top-1/2 transform -translate-y-1/2 -ml-3 sm:-ml-5 z-20 p-2 rounded-full shadow-lg transition-all duration-200 ${
+                  currentIndex === 0
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-50"
+                    : "bg-white text-gray-700 hover:bg-orange-500 hover:text-white hover:shadow-xl"
                 }`}
-                aria-label="Previous project"
+                aria-label="Previous projects"
               >
-                <ChevronLeft size={24} />
+                <ChevronLeft size={28} />
               </button>
-              
+
               <button
                 onClick={goToNext}
                 disabled={currentIndex >= maxIndex}
-                className={`absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-10 p-2 rounded-full shadow-lg transition-all duration-200 ${
-                  currentIndex >= maxIndex 
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-xl'
+                className={`absolute right-0 top-1/2 transform -translate-y-1/2 -mr-3 sm:-mr-5 z-20 p-2 rounded-full shadow-lg transition-all duration-200 ${
+                  currentIndex >= maxIndex
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-50"
+                    : "bg-white text-gray-700 hover:bg-orange-500 hover:text-white hover:shadow-xl"
                 }`}
-                aria-label="Next project"
+                aria-label="Next projects"
               >
-                <ChevronRight size={24} />
+                <ChevronRight size={28} />
               </button>
             </>
           )}
 
-          {/* Projects Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {visibleProjects.map((project, index) => (
-              <div 
-                key={project.id} 
-                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden"
+          <div
+            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${
+              effectiveItemsPerView === 2 ? "lg:grid-cols-2" : ""
+            } ${
+              effectiveItemsPerView === 1 ? "md:grid-cols-1 lg:grid-cols-1" : ""
+            }`}
+          >
+            {visibleProjects.map((project) => (
+              <div
+                key={project.id}
+                className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col group"
               >
-                {/* Project Card Header - Show image if available, otherwise show gradient */}
-                {project.image ? (
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={project.image.url} 
+                <div className="relative h-56 sm:h-64 overflow-hidden">
+                  {project.image ? (
+                    <img
+                      src={project.image.url}
                       alt={project.image.alt}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
-                      <h3 className="text-2xl font-bold text-white p-4 w-full text-center">
-                        {project.title}
-                      </h3>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+                      <FileText size={48} className="text-white opacity-50" />
                     </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4">
+                    <h3 className="text-xl font-bold text-white">
+                      {project.name}
+                    </h3>
+                    {project.oneLiner && (
+                      <p className="text-sm text-orange-200 mt-1 truncate">
+                        {project.oneLiner}
+                      </p>
+                    )}
                   </div>
-                ) : (
-                  <div className="bg-gradient-to-r from-orange-400 to-orange-500 text-white p-8 text-center relative">
-                    <h3 className="text-3xl font-bold mb-2">{project.title}</h3>
-                  </div>
-                )}
-                
-                {/* Project Details */}
-                <div className="p-6">
-                  <h4 className="font-bold text-gray-800 mb-3 text-lg">
-                    {project.name}
-                  </h4>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                </div>
+
+                <div className="p-5 flex-grow flex flex-col">
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-4 flex-grow">
                     {project.description}
                   </p>
-                  
-                  {/* Project Documents Section - Only show if available */}
-                  {project.links && project.links.length > 0 && (
-                    <div className="mt-4 border-t pt-4">
-                      <h5 className="text-sm font-semibold text-gray-700 mb-3">Project Documents</h5>
-                      <div className="flex flex-col space-y-3">
-                        {(() => {
-                          // Process all links to avoid duplicates
-                          const allLinks = new Set();
-                          
-                          // Collect all individual links
-                          project.links.forEach(link => {
-                            link.split(',').forEach(l => {
-                              allLinks.add(l.trim());
-                            });
-                          });
-                          
-                          // Return the unique links
-                          const uniqueLinks = Array.from(allLinks);
-                          
-                          // Filter to only include Google Drive links
-                          const driveLinks = uniqueLinks.filter(link => 
-                            link.includes('drive.google.com')
-                          );
-                          
-                         
-                          if (driveLinks.length > 0) {
-                            return driveLinks.map((link, i) => (
-                              <a
-                                key={i}
-                                href={link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center text-orange-600 hover:text-orange-700 text-sm hover:underline transition-colors duration-200"
-                              >
-                                <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                                </svg>
-                                Google Drive Document {i + 1}
-                              </a>
-                            ));
-                          }
-                          
-                          return null;
-                        })()}
-                      </div>
+
+                  {project.externalUrl && (
+                    <div className="mt-auto pt-4 border-t border-gray-200">
+                      <a
+                        href={project.externalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium text-sm hover:underline transition-colors duration-200 group/link"
+                      >
+                        Learn More
+                        <ExternalLink
+                          size={16}
+                          className="ml-1.5 transform transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
+                        />
+                      </a>
                     </div>
                   )}
                 </div>
@@ -302,17 +300,18 @@ if (project.description && Array.isArray(project.description)) {
             ))}
           </div>
 
-          {/* Dots Indicator - Only show if slider is needed */}
-          {showSlider && (
-            <div className="flex justify-center mt-6 space-x-2">
-              {Array.from({ length: maxIndex + 1 }).map((_, index) => (
+          {showSlider && totalItems > effectiveItemsPerView && (
+            <div className="flex justify-center mt-8 space-x-2">
+              {Array.from({
+                length: Math.ceil(totalItems / 1) - effectiveItemsPerView + 1,
+              }).map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => setCurrentIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                    index === currentIndex 
-                      ? 'bg-orange-500' 
-                      : 'bg-gray-300 hover:bg-gray-400'
+                  onClick={() => setCurrentIndex(index)} // Each dot represents a starting index for a "view"
+                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ease-in-out transform hover:scale-125 ${
+                    index === currentIndex
+                      ? "bg-orange-500 scale-125"
+                      : "bg-gray-300 hover:bg-gray-400"
                   }`}
                   aria-label={`Go to project set ${index + 1}`}
                 />
@@ -321,6 +320,14 @@ if (project.description && Array.isArray(project.description)) {
           )}
         </div>
       )}
+      <style jsx>{`
+        .line-clamp-4 {
+          display: -webkit-box;
+          -webkit-line-clamp: 4;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
     </div>
   );
 };

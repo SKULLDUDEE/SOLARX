@@ -36,39 +36,40 @@ export default function CompanyInformation({ companyId }) {
     const fetchCompanyDetails = async () => {
       try {
         setLoading(true);
-        console.log('CompanyInformation - Fetching company details for ID:', id);
+        // console.log('CompanyInformation - Fetching company details for ID:', id);
         
         // Get all companies first
-        const response = await fetch(`http://localhost:1337/api/companies`);
+        const response = await fetch(`http://localhost:1337/api/startups`);
         const result = await response.json();
         
-        console.log("CompanyInformation - All companies response:", result);
+        // console.log("CompanyInformation - All companies response:", result);
         
         // Find the company with the matching ID
         const companyData = result.data.find(c => c.id.toString() === id.toString());
         
         if (companyData) {
-          console.log("CompanyInformation - Found company:", companyData);
+          // console.log("CompanyInformation - Found company:", companyData);
           
           // Parse the introduction manually
           const parsedIntro = parseRichText(companyData.introduction);
-          console.log("CompanyInformation - Parsed introduction:", parsedIntro);
+          // console.log("CompanyInformation - Parsed introduction:", parsedIntro);
           
           // Create a clean company object
           const cleanCompany = {
             id: companyData.id,
             Name: companyData.Name || 'Unnamed Company',
-            introduction: companyData.introduction,
-            parsedIntroduction: parsedIntro,
-            Website: companyData.Website || '',
-            ContactEmail: companyData.ContactEmail || '',
-            FoundingYear: companyData.FoundingYear || '',
-            Headquarters: companyData.Headquarters || '',
-            TeamSize: companyData.TeamSize || '',
+            introduction: companyData.Description[0].children[0].text || '',
+            // parsedIntroduction: parsedIntro,
+            Website: companyData.Website_URL || '',
+            ContactEmail: companyData.Contact_Email || '',
+            FoundingYear: companyData.Founding_Year || '',
+            Headquarters: companyData.Location || '',
+            TeamSize: companyData.Team_Size || '',
+            sdgs: companyData.SDG,
             // Add any other fields needed
           };
           
-          console.log('CompanyInformation - Clean company data:', cleanCompany);
+          // console.log('CompanyInformation - Clean company data:', cleanCompany);
           setCompany(cleanCompany);
         } else {
           console.warn('CompanyInformation - Company not found with ID:', id);
@@ -87,7 +88,7 @@ export default function CompanyInformation({ companyId }) {
     }
   }, [id]);
   return (
-    <div className="p-6 md:p-12 lg:p-20 font-sans">
+    <div className="p-6 md:p-12 lg:p-20 font-sans max-w-7xl mx-auto">
 
      
       {loading && (
@@ -138,7 +139,7 @@ export default function CompanyInformation({ companyId }) {
                   <p className="text-gray-500 text-sm mb-1">SDG Alignment</p>
                   <p className="text-gray-800 text-xl font-medium">
                     {company.sdgs && company.sdgs.length > 0 
-                      ? company.sdgs.map(sdg => sdg.name).join(', ') 
+                      ? company.sdgs.map(sdg => sdg).join(', ') 
                       : 'Not specified'}
                   </p>
                 </div>

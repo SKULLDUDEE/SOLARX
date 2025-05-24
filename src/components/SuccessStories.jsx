@@ -8,7 +8,7 @@ export default function SuccessStories() {
 
   const stories = [
     {
-      image: "/api/placeholder/400/200",
+      image: "https://picsum.photos/seed/qwe/400/200",
       alt: "SolarTech Solutions",
       country: "Kenya",
       title: "SolarTech Solutions",
@@ -18,7 +18,7 @@ export default function SuccessStories() {
       fundingRaised: "$3.2M"
     },
     {
-      image: "/api/placeholder/400/200",
+      image: "https://picsum.photos/seed/ert/400/200",
       alt: "SunWater",
       country: "India",
       title: "SunWater",
@@ -28,7 +28,7 @@ export default function SuccessStories() {
       fundingRaised: "$2.8M"
     },
     {
-      image: "/api/placeholder/400/200",
+      image: "https://picsum.photos/seed/iouert/400/200",
       alt: "MicroSolar",
       country: "Colombia",
       title: "MicroSolar",
@@ -38,7 +38,7 @@ export default function SuccessStories() {
       fundingRaised: "$4.5M"
     },
     {
-        image: "/api/placeholder/400/200",
+        image: "https://picsum.photos/seed/ksdljf/400/200",
         alt: "MicroSolar",
         country: "Colombia",
         title: "MicroSolar",

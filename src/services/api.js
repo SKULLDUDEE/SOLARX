@@ -6,7 +6,7 @@ const API_URL = 'http://localhost:1337/api';
 // Company data
 export const fetchCompanyData = async () => {
   try {
-    const response = await axios.get(`${API_URL}/company?populate=*`);
+    const response = await axios.get(`${API_URL}/startups?populate=*`);
     return response.data;
   } catch (error) {
     console.error('Error fetching company data:', error);
@@ -22,13 +22,13 @@ export const fetchCompanies = async (filters = {}) => {
     
     // Add region filter if provided
     if (filters.region && filters.region !== 'all') {
-      queryParams += `&filters[Headquarters][$eq]=${filters.region}`;
+      queryParams += `&filters[Regions][$eq]=${filters.region}`;
     }
     
     // Add sorting if needed
     queryParams += '&sort=createdAt:desc';
     
-    const response = await axios.get(`${API_URL}/companies${queryParams}`);
+    const response = await axios.get(`${API_URL}/startups${queryParams}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching companies data:', error);
@@ -45,7 +45,7 @@ export const fetchCompanyById = async (id) => {
     
     // For this implementation, we'll use the same endpoint as fetchCompanies
     // but filter by ID to get a specific company
-    const response = await axios.get(`${API_URL}/companies?filters[id][$eq]=${id}&populate=*`);
+    const response = await axios.get(`${API_URL}/startups?filters[id][$eq]=${id}&populate=*`);
     console.log(`Fetched company ${id}:`, response.data);
     
     // Return the first item in the data array (should be only one since we filtered by ID)
@@ -874,10 +874,10 @@ export const fetchCompanyTeam = async (id) => {
 };
 
 // Fetch mentors data (from founders endpoint)
-export const fetchMentors = async () => {
+export const fetchMentors = async (id) => {
   try {
     // Using the founders endpoint which contains the mentor data
-    const response = await axios.get(`${API_URL}/founders?populate=*`);
+    const response = await axios.get(`${API_URL}/founders?populate=*&filters[startup][id][$eq]=${id}`);
     
     // Log the response to help with debugging
     console.log('Mentors API response (from founders):', response.data);
