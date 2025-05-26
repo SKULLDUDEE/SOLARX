@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import KeyImpactMetricsScroller from "./KeyImpactMetricsScroller";
 
 const CATEGORIES = {
   Environmental_Impact_Metrics: "Environmental Impact",
@@ -109,12 +110,28 @@ export default function ImpactMetrics({ companyId }) {
         const res = await axios.get(url);
         const startup = res.data.data[0];
 
-        const structured = {};
-        for (const key in CATEGORIES) {
-          structured[key] = startup[key] || [];
-        }
+        const structured = [];
+        // for (const key in CATEGORIES) {
+        //   structured[key] = startup[key] || [];
+        // }
+
+        console.log("Raw metrics data:", startup);
+        Object.entries(startup).forEach(([key, value]) => {
+          if (!CATEGORIES[key]) return; // Skip if not a recognized category
+          value.forEach((item) => {
+            structured.push({
+              label: item.Title,
+              value: item.Metric,
+              id: item.id,
+            });
+          });
+        });
 
         setMetrics(structured);
+
+        // console.log(`Loaded metrics for company ${companyId}:`, structured);
+
+        console.log(`Metrics for:`, structured);
       } catch (err) {
         console.error("Error loading metrics:", err);
         setMetrics({});
@@ -127,17 +144,16 @@ export default function ImpactMetrics({ companyId }) {
   }, [companyId]);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16">
-      <header className="mb-12">
-        <div className="flex items-center gap-4">
-          <div className="w-24 h-1 bg-orange-500 rounded-full" />
-          <h1 className="text-4xl font-bold text-gray-900">Impact Metrics</h1>
-        </div>
-        <p className="mt-2 text-gray-600">
-          See how this company is performing across various sustainability and
-          scalability areas.
-        </p>
-      </header>
+    <div className="max-w-7xl mx-auto p-6 lg:p-0 my-20">
+      <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
+        <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+        <h1 className="text-3xl md:text-5xl font-bold mb-1">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+            Impact Metrics
+          </span>
+        </h1>
+        <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+      </div>
 
       {loading ? (
         <div className="flex justify-center py-20">
@@ -148,15 +164,18 @@ export default function ImpactMetrics({ companyId }) {
           No impact metrics available for this company.
         </div>
       ) : (
-        <div className="overflow-x-auto hide-scrollbar">
-          <div className="flex space-x-8 px-1">
-            {Object.entries(CATEGORIES).map(([key, label]) => (
-              <div key={key} className="flex-shrink-0 w-max md:w-max">
-                <MetricsSection title={label} metrics={metrics[key]} />
-              </div>
-            ))}
-          </div>
-        </div>
+        <>
+          <KeyImpactMetricsScroller metrics={metrics} />
+        </>
+        // <div className="overflow-x-auto hide-scrollbar">
+        //   <div className="flex space-x-8 px-1">
+        //     {Object.entries(CATEGORIES).map(([key, label]) => (
+        //       <div key={key} className="flex-shrink-0 w-max md:w-max">
+        //         <MetricsSection title={label} metrics={metrics[key]} />
+        //       </div>
+        //     ))}
+        // {/* //   </div>
+        // // </div> */}
       )}
     </div>
   );

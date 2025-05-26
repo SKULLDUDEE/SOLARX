@@ -45,15 +45,17 @@ export default function MediaCoverageSection() {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-10 py-16 bg-white">
-      <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent mb-4 animate-fade-in">
-          Media Coverage
-        </h1>
-        <p className="text-gray-600 text-lg animate-fade-in-delay">
-          We’re proud to be featured by leading publications on our journey.
-        </p>
-      </div>
+    <div className="max-w-7xl min-w-full mx-auto pb-16 bg-white px-4">
+      <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 text-center">
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+          Media Coverage & Recognition
+        </span>
+      </h1>
+      <div className="w-24 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 mx-auto rounded-full mb-6"></div>
+      <p className="text-lg text-gray-700 max-w-4xl mx-auto mb-12">
+        SolarX and our startups have been featured in leading publications and
+        received prestigious awards.
+      </p>
 
       {loading && (
         <div className="flex justify-center items-center py-20">
@@ -69,7 +71,7 @@ export default function MediaCoverageSection() {
       )}
 
       {!loading && !error && (
-        <div className="grid md:grid-cols-2 gap-8 animate-slide-in-left">
+        <div className="grid md:grid-cols-2 gap-8 animate-slide-in-left max-w-7xl mx-auto px-4">
           {mediaCoverage.length > 0 ? (
             mediaCoverage.map((item, index) => (
               <div

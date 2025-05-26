@@ -1,17 +1,23 @@
-import React from 'react';
-import { Lightbulb, DollarSign, Globe, TrendingUp, ChevronDown } from 'lucide-react';
+import React from "react";
+import {
+  Lightbulb,
+  DollarSign,
+  Globe,
+  TrendingUp,
+  ChevronDown,
+} from "lucide-react";
 
 const AboutSolarXChallenge = () => {
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-orange-500 mb-4">
-            About SolarX Challenge
-          </h2>
-          <div className="w-16 h-1 bg-gray-800 mx-auto"></div>
-        </div>
+        <h2 className="text-4xl md:text-5xl font-extrabold mb-5 text-center">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-red-600 ">
+            About the SolarX Startup Challenge
+          </span>
+        </h2>
+        <div className="w-28 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 mx-auto rounded-full mb-6"></div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Side - Images Grid */}
@@ -19,40 +25,48 @@ const AboutSolarXChallenge = () => {
             <div className="grid grid-cols-2 gap-4">
               {/* Top Row */}
               <div className="bg-orange-100 rounded-2xl p-8 shadow-lg">
-                <img 
-                  src="/api/placeholder/200/150" 
-                  alt="Solar Innovation" 
+                <img
+                  src="/api/placeholder/200/150"
+                  alt="Solar Innovation"
                   className="w-full h-32 object-cover rounded-lg mb-4"
                 />
-                <p className="text-sm text-gray-600 font-medium text-center">Solar Innovation</p>
+                <p className="text-sm text-gray-600 font-medium text-center">
+                  Solar Innovation
+                </p>
               </div>
-              
+
               <div className="bg-orange-100 rounded-2xl p-8 shadow-lg">
-                <img 
-                  src="/api/placeholder/200/150" 
-                  alt="Solar Impact" 
+                <img
+                  src="/api/placeholder/200/150"
+                  alt="Solar Impact"
                   className="w-full h-32 object-cover rounded-lg mb-4"
                 />
-                <p className="text-sm text-gray-600 font-medium text-center">Solar Impact</p>
+                <p className="text-sm text-gray-600 font-medium text-center">
+                  Solar Impact
+                </p>
               </div>
 
               {/* Bottom Row */}
               <div className="bg-orange-100 rounded-2xl p-8 shadow-lg">
-                <img 
-                  src="/api/placeholder/200/150" 
-                  alt="Solar Technology" 
+                <img
+                  src="/api/placeholder/200/150"
+                  alt="Solar Technology"
                   className="w-full h-32 object-cover rounded-lg mb-4"
                 />
-                <p className="text-sm text-gray-600 font-medium text-center">Solar Technology</p>
+                <p className="text-sm text-gray-600 font-medium text-center">
+                  Solar Technology
+                </p>
               </div>
 
               <div className="bg-orange-100 rounded-2xl p-8 shadow-lg">
-                <img 
-                  src="/api/placeholder/200/150" 
-                  alt="Solar Implementation" 
+                <img
+                  src="/api/placeholder/200/150"
+                  alt="Solar Implementation"
                   className="w-full h-32 object-cover rounded-lg mb-4"
                 />
-                <p className="text-sm text-gray-600 font-medium text-center">Solar Implementation</p>
+                <p className="text-sm text-gray-600 font-medium text-center">
+                  Solar Implementation
+                </p>
               </div>
             </div>
 
@@ -66,16 +80,17 @@ const AboutSolarXChallenge = () => {
             {/* Description */}
             <div className="space-y-6">
               <p className="text-gray-700 text-lg leading-relaxed">
-                The SolarX Startup Challenge is a flagship program by the International Solar 
-                Alliance (ISA) designed to identify, nurture, and accelerate solar startups across 
-                Africa, Asia-Pacific, Latin America & Caribbean, and the Middle East & North 
-                Africa.
+                The SolarX Startup Challenge is a flagship program by the
+                International Solar Alliance (ISA) designed to identify,
+                nurture, and accelerate solar startups across Africa,
+                Asia-Pacific, Latin America & Caribbean, and the Middle East &
+                North Africa.
               </p>
-              
+
               <p className="text-gray-700 text-lg leading-relaxed">
-                Our mission is to mobilize over USD 1 trillion in investments for solar projects by 
-                2030 and enable energy access in underserved regions through innovative 
-                entrepreneurship.
+                Our mission is to mobilize over USD 1 trillion in investments
+                for solar projects by 2030 and enable energy access in
+                underserved regions through innovative entrepreneurship.
               </p>
             </div>
 
@@ -86,9 +101,12 @@ const AboutSolarXChallenge = () => {
                 <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                   <Lightbulb className="w-6 h-6 text-orange-500" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">Innovation</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  Innovation
+                </h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Supporting groundbreaking solar technologies that solve real-world problems
+                  Supporting groundbreaking solar technologies that solve
+                  real-world problems
                 </p>
               </div>
 
@@ -97,9 +115,12 @@ const AboutSolarXChallenge = () => {
                 <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                   <Globe className="w-6 h-6 text-orange-500" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">Global Impact</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  Global Impact
+                </h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Creating sustainable solutions for communities across four major regions
+                  Creating sustainable solutions for communities across four
+                  major regions
                 </p>
               </div>
 
@@ -108,9 +129,12 @@ const AboutSolarXChallenge = () => {
                 <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                   <DollarSign className="w-6 h-6 text-orange-500" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">Investment</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  Investment
+                </h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Connecting promising startups with funding opportunities and resources
+                  Connecting promising startups with funding opportunities and
+                  resources
                 </p>
               </div>
 
@@ -119,9 +143,12 @@ const AboutSolarXChallenge = () => {
                 <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                   <TrendingUp className="w-6 h-6 text-orange-500" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">Sustainability</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  Sustainability
+                </h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Promoting clean energy solutions aligned with UN Sustainable Development Goals
+                  Promoting clean energy solutions aligned with UN Sustainable
+                  Development Goals
                 </p>
               </div>
             </div>

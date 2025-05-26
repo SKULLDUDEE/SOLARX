@@ -177,14 +177,14 @@ const ProjectGallery = ({ companyId }) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-10 text-center sm:text-left">
-        <h2 className="text-3xl font-bold text-gray-800 inline-block relative">
-          Project Gallery
-          <span className="block w-20 h-1 bg-orange-500 mt-2 mx-auto sm:mx-0"></span>
-        </h2>
-        {projects.length > 0 && projects[0].oneLiner && (
-          <p className="mt-3 text-lg text-gray-600">{projects[0].oneLiner}</p>
-        )}
+      <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
+        <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+        <h1 className="text-3xl md:text-5xl font-bold mb-1">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+            Project Gallery
+          </span>
+        </h1>
+        <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
       </div>
 
       {loading && (

@@ -1,0 +1,309 @@
+/* General text styling within .writeup sections, if not overridden by more specific Tailwind */
+.writeup .container p {
+    /* Targeting paragraphs inside .container within .writeup */
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: #d1d5db;
+    /* Tailwind gray-300 */
+    margin: 1.25rem 0;
+    /* Equivalent to mb-5 */
+    max-width: 75ch;
+    /* Optimal reading width for paragraphs */
+}
+
+/* Styles for paragraphs directly within the flex children of .writeup section */
+.writeup .flex>div>p {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: #d1d5db;
+    margin-bottom: 1.25rem;
+}
+
+section.writeup {
+    min-height: 100vh;
+    /* Ensure section fills viewport, but can grow */
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5rem 0;
+    /* Increased vertical padding for the section */
+}
+
+.container {
+    /* Used within .writeup sections */
+    height: max-content;
+    padding: 2rem clamp(1rem, 5vw, 5rem);
+    /* Responsive horizontal padding */
+    width: 100%;
+    max-width: 1280px;
+    /* Standard max-width for content */
+    margin: 0 auto;
+    /* Center the container */
+}
+
+.sticky-parent {
+    position: relative;
+    width: 100%;
+    height: 1500vh;
+}
+
+.sticky {
+    overflow: hidden;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+}
+
+.scroll-section {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 1500vw;
+    /* For 4 timeline events */
+    will-change: transform;
+    display: flex;
+    /* justify-content: space-between; Removed to rely on item width and padding/margin */
+    align-items: center;
+    padding: 0 2vw;
+    /* Padding on the sides of the entire scrollable area */
+}
+
+.sticky img {
+    width: 550px;
+    height: 85vh;
+    max-height: 650px;
+    object-fit: cover;
+    object-position: center;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.35);
+    /* Softer, more modern shadow */
+    border-radius: 1rem;
+    margin-right: 2.5rem;
+    /* Space between image and content block */
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    /* Subtle light border */
+}
+
+.sticky img:hover {
+    transform: scale(1.03) translateY(-5px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+}
+
+.timeline-event {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    /* Center content (image + text block) */
+    align-items: center;
+    width: 100vw;
+    /* Each event occupies full viewport width */
+    flex-shrink: 0;
+    padding: 3rem clamp(2rem, 8vw, 6rem);
+    /* Responsive padding */
+    /* Optional: subtle background/border for each event card if needed */
+    /* background-color: rgba(255, 255, 255, 0.02); */
+    /* border-radius: 1.5rem; (already there) */
+    /* margin: 2rem 0; (already there) - this creates vertical space if items stack, not for horizontal */
+}
+
+.content {
+    /* Text content block in timeline event */
+    width: 48%;
+    /* Adjust based on image width and desired gap */
+    max-width: 600px;
+    /* Max width for text block */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.content-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    position: relative;
+    /* For the date's ::after element */
+}
+
+.date {
+    font-size: 2.5rem;
+    /* Slightly adjusted */
+    color: white;
+    font-weight: 700;
+    /* Bolder */
+    padding-bottom: 10px;
+    /* Space for the underline */
+    position: relative;
+    /* Context for ::after */
+    margin-bottom: 0.5rem;
+    /* Space below date, before title */
+}
+
+.date::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background-color: #ff9900;
+    /* Main orange accent */
+    border-radius: 2px;
+    /* Slightly rounded underline */
+}
+
+.title {
+    font-size: 1.75rem;
+    /* Larger for more impact */
+    font-weight: 600;
+    color: #f3f4f6;
+    /* Tailwind's gray-100, very light */
+    white-space: normal;
+    /* Allow title to wrap */
+    letter-spacing: 0.3px;
+    line-height: 1.3;
+}
+
+.description {
+    font-size: 1rem;
+    /* Base size for readability */
+    width: 100%;
+    line-height: 1.8;
+    color: #cbd5e1;
+    /* Tailwind's slate-300, soft gray */
+    font-weight: 300;
+}
+
+.description ul {
+    list-style-position: outside;
+    /* Standard list appearance */
+    margin-top: 0.75rem;
+    padding-left: 1.25rem;
+    /* Indentation for bullets */
+}
+
+.description li {
+    margin-bottom: 0.4rem;
+    color: #cbd5e1;
+    /* Ensure list items match description color */
+}
+
+.progress-bar-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    /* Slightly thicker for better visibility */
+    background-color: rgba(10, 10, 10, 0.6);
+    /* Darker, slightly more opaque */
+    z-index: 1000;
+    /* Ensure it's above most content */
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff9900, #ffbe57);
+    /* Brighter orange gradient */
+    transition: width 0.1s ease-out;
+    border-radius: 0 4px 4px 0;
+    /* Rounded right edge */
+}
+
+.carousel-container {
+    width: 550px;
+    /* Or make responsive e.g., width: 100%; */
+    max-width: 90%;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+    position: relative;
+    /* IMPORTANT for absolute positioning of dots */
+    overflow: hidden;
+    /* IMPORTANT for Embla viewport */
+    border-radius: 0.75rem;
+    /* 12px */
+    height: 400px;
+    /* Define a fixed height for the carousel viewport */
+}
+
+.embla {
+    overflow: hidden;
+    /* This is the viewport */
+    height: 100%;
+    /* Take full height of .carousel-container */
+}
+
+.embla__container {
+    display: flex;
+    /* Essential for horizontal layout */
+    height: 100%;
+    /* Embla will handle transform for sliding */
+}
+
+.embla__slide {
+    position: relative;
+    /* For absolute positioning of image inside */
+    flex: 0 0 100%;
+    /* Each slide takes 100% of the viewport width */
+    min-width: 0;
+    /* Important for flex items */
+    height: 100%;
+}
+
+/* img tag inside embla__slide will be absolutely positioned */
+.embla__slide img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Cover the slide area */
+    display: block;
+}
+
+
+.carousel-dots {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 1;
+    /* Ensure dots are above slides if needed */
+}
+
+.carousel-dots button,
+/* Target generic button if DotButton doesn't have specific class */
+.carousel-dot {
+    /* Add this class to DotButton component */
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.carousel-dots button.active,
+.carousel-dot.active {
+    background-color: #ff9900;
+    /* Main orange for active */
+    transform: scale(1.3);
+}
+
+.carousel-dots button:focus-visible,
+.carousel-dot:focus-visible {
+    outline: 2px solid #ffc966;
+    outline-offset: 2px;
+}

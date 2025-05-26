@@ -59,7 +59,7 @@ export default function FundingJourney({ companyId }) {
         setLoading(true);
         setError(null);
 
-        const apiUrl = `http://localhost:1337/api/startups?populate[0]=fundings&populate[1]=fundings.investors&filters[id][$eq]=${companyId}`;
+        const apiUrl = `http://localhost:1337/api/startups?populate[0]=funding&populate[1]=funding.investors&filters[id][$eq]=${companyId}`;
 
         const response = await fetch(apiUrl);
         if (!response.ok) {
@@ -75,8 +75,8 @@ export default function FundingJourney({ companyId }) {
 
         if (result && result.data && result.data.length > 0) {
           const startupData = result.data[0];
-          if (startupData.fundings && startupData.fundings.length > 0) {
-            processFundingData(startupData.fundings);
+          if (startupData.funding && startupData.funding.length > 0) {
+            processFundingData(startupData.funding);
           } else {
             console.log("No funding rounds found for this startup.");
             setFundingRounds([]);
@@ -209,12 +209,14 @@ export default function FundingJourney({ companyId }) {
             isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
           }`}
         >
-          <div className="flex items-center justify-center mb-8">
-            <div className="w-24 h-1 bg-orange-400 mr-4"></div>
-            <h1 className="text-4xl font-bold text-gray-900">
-              Funding Journey
+          <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
+            <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+            <h1 className="text-3xl md:text-5xl font-bold mb-1">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+                Funding Journey
+              </span>
             </h1>
-            <div className="w-24 h-1 bg-orange-400 ml-4"></div>
+            <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
           </div>
         </div>
 

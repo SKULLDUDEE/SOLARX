@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"; // For better camera control
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import {
   Fullscreen,
   Minimize,
@@ -10,21 +10,15 @@ import {
   Cpu,
   XCircle,
   Loader2,
+  MapPin
+  // MapPin, // You can use this for the legend if desired
 } from "lucide-react";
 
 // --- Constants ---
-const PRESENCE_API_URL =
-  "http://localhost:1337/api/global-presences?populate[0]=Presence&populate[1]=startups";
 const STARTUPS_API_URL = "http://localhost:1337/api/startups?populate=*";
 
-const PRESENCE_TYPE_COLORS_HEX = {
-  "Current Operations": 0x007bff,
-  "Expansion Targets": 0x28a745,
-  "Strategic Partnership": 0xffc107,
-  "Pilot Program": 0x17a2b8,
-};
-const DEFAULT_PRESENCE_COLOR_HEX = 0x6c757d;
-const GLOBE_RADIUS = 1; // Base radius for the globe
+const HQ_MARKER_COLOR_HEX = 0xff5722; // Orange color for HQ markers
+const GLOBE_RADIUS = 1;
 
 // --- Helper Functions ---
 const extractRichTextToString = (richTextArray) => {
@@ -45,7 +39,7 @@ const extractRichTextToString = (richTextArray) => {
 
 const latLngToVector3 = (lat, lng, radius = GLOBE_RADIUS) => {
   const phi = (90 - lat) * (Math.PI / 180);
-  const theta = (lng + 180) * (Math.PI / 180); // Ensure lng is in 0-360 range if needed, or adjust theta accordingly
+  const theta = (lng + 180) * (Math.PI / 180);
   const x = -(radius * Math.sin(phi) * Math.cos(theta));
   const z = radius * Math.sin(phi) * Math.sin(theta);
   const y = radius * Math.cos(phi);
@@ -59,11 +53,11 @@ const SolarXGlobalReach = () => {
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const globeMeshRef = useRef(null);
-  const atmosphereMeshRef = useRef(null);
+  // const atmosphereMeshRef = useRef(null); // Atmosphere is part of base setup, not directly manipulated later
   const controlsRef = useRef(null);
   const animationFrameIdRef = useRef(null);
-  const markersGroupRef = useRef(null); // A THREE.Group to hold all markers
-  const individualMarkersRef = useRef([]); // Array to store actual marker meshes for raycasting
+  const markersGroupRef = useRef(null);
+  const individualMarkersRef = useRef([]);
 
   const [isComponentLoading, setIsComponentLoading] = useState(true);
   const [isThreeJsReady, setIsThreeJsReady] = useState(false);
@@ -86,70 +80,68 @@ const SolarXGlobalReach = () => {
       setIsComponentLoading(true);
       setApiError(null);
       try {
-        const [presenceResponse, startupsResponse] = await Promise.all([
-          fetch(PRESENCE_API_URL),
-          fetch(STARTUPS_API_URL),
-        ]);
+        const startupsResponse = await fetch(STARTUPS_API_URL);
 
-        if (!presenceResponse.ok)
+        if (!startupsResponse.ok) {
           throw new Error(
-            `Global Presence API Error: ${presenceResponse.statusText}`
+            `Startups API Error: ${startupsResponse.status} ${startupsResponse.statusText}`
           );
-        if (!startupsResponse.ok)
-          throw new Error(`Startups API Error: ${startupsResponse.statusText}`);
+        }
 
-        const presenceData = await presenceResponse.json();
-        const startupsData = await startupsResponse.json();
-
-        setAllStartups(startupsData.data || []);
+        const startupsResult = await startupsResponse.json();
+        const fetchedStartups = startupsResult.data || []; // Access the 'data' array
+        setAllStartups(fetchedStartups);
 
         const points = [];
-        if (presenceData.data && presenceData.data.length > 0) {
-          presenceData.data.forEach((gp) => {
-            const associatedStartups = gp.startups || [];
-            if (gp.Presence && Array.isArray(gp.Presence)) {
-              gp.Presence.forEach((p) => {
-                if (
-                  p.Location &&
-                  typeof p.Location.lat === "number" &&
-                  typeof p.Location.lng === "number"
-                ) {
-                  const mainStartup =
-                    associatedStartups.length > 0 ? associatedStartups[0] : {};
-                  points.push({
-                    id: `pt-${gp.id}-${p.id}`,
-                    lat: p.Location.lat,
-                    lng: p.Location.lng,
-                    color:
-                      PRESENCE_TYPE_COLORS_HEX[p.Type] ||
-                      DEFAULT_PRESENCE_COLOR_HEX,
-                    // Info for panel
-                    type: p.Type || "Unknown Presence",
-                    startupId: mainStartup.id || "N/A",
-                    startupName: mainStartup.Name || "N/A",
-                    startupCountry: mainStartup.Country || "N/A",
-                    startupRegions: mainStartup.Regions?.join(", ") || "N/A",
-                    startupSectors:
-                      mainStartup.Sector_Tags?.map((t) =>
-                        t.split("|").pop().trim()
-                      ).join(", ") || "N/A",
-                    startupTech:
-                      mainStartup.Technology_Tags?.map((t) =>
-                        t.split("|").pop().trim()
-                      ).join(", ") || "N/A",
-                    startupDescription:
-                      extractRichTextToString(mainStartup.Description) ||
-                      "No description available.",
-                  });
-                }
+        if (fetchedStartups.length > 0) {
+          fetchedStartups.forEach((startup) => {
+            // Access HQ_Location directly from the startup object
+            const hqLocation = startup.HQ_Location;
+
+            if (
+              hqLocation &&
+              typeof hqLocation.lat === "number" &&
+              typeof hqLocation.lng === "number"
+            ) {
+              points.push({
+                id: `startup-hq-${startup.id}`,
+                lat: hqLocation.lat,
+                lng: hqLocation.lng,
+                color: HQ_MARKER_COLOR_HEX,
+                type: "Headquarters",
+                startupId: startup.id,
+                startupName: startup.Name || "N/A",
+                // The 'Location' field is the string, HQ_Location is the lat/lng object
+                startupLocationString: startup.Location || "N/A",
+                startupCountry: startup.Country || "N/A",
+                startupRegions: startup.Regions?.join(", ") || "N/A",
+                startupSectors:
+                  startup.Sector_Tags?.map((t) =>
+                    typeof t === "string" ? t.split("|").pop().trim() : ""
+                  )
+                    .filter(Boolean)
+                    .join(", ") || "N/A",
+                startupTech:
+                  startup.Technology_Tags?.map((t) =>
+                    typeof t === "string" ? t.split("|").pop().trim() : ""
+                  )
+                    .filter(Boolean)
+                    .join(", ") || "N/A",
+                startupDescription:
+                  extractRichTextToString(startup.Description) ||
+                  "No description available.",
               });
+            } else {
+              console.warn(
+                `Startup ID ${startup.id} (${startup.Name}) missing or invalid HQ_Location data.`
+              );
             }
           });
         }
         setGlobeDataPoints(points);
       } catch (error) {
         console.error("Error fetching data:", error);
-        setApiError(error.message);
+        setApiError(error.message || "Failed to fetch startup data.");
       } finally {
         setIsComponentLoading(false);
       }
@@ -157,7 +149,7 @@ const SolarXGlobalReach = () => {
     fetchData();
   }, []);
 
-  // Summaries processing (same as before)
+  // Summaries processing
   useEffect(() => {
     if (allStartups.length === 0) {
       setRegionSummary([]);
@@ -198,52 +190,58 @@ const SolarXGlobalReach = () => {
       !globeContainerRef.current ||
       rendererRef.current
     ) {
-      // Don't init if loading or already initialized
       return;
     }
 
     const container = globeContainerRef.current;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    let width = container.clientWidth;
+    let height = container.clientHeight;
 
-    // Scene
+    if (width === 0 || height === 0) {
+      // Fallback if clientWidth/Height is 0 initially
+      const rect = container.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      if (width === 0 || height === 0) {
+        console.warn(
+          "Globe container has zero dimensions. Cannot initialize Three.js canvas."
+        );
+        return;
+      }
+    }
+
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // Camera
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 3.5; // Adjusted initial zoom
+    camera.position.z = 3.5;
     cameraRef.current = camera;
 
-    // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setClearColor(0x000000, 0); // Transparent background
+    renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.minDistance = 1.5;
     controls.maxDistance = 10;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.2; // Slower auto-rotation
+    controls.autoRotateSpeed = 0.2;
     controlsRef.current = controls;
 
-    // Lighting
     scene.add(new THREE.AmbientLight(0xcccccc, 0.8));
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
     directionalLight.position.set(5, 5, 5);
     scene.add(directionalLight);
 
-    // Globe Mesh
     const globeGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 64, 64);
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(
-      "//unpkg.com/three-globe/example/img/earth-day.jpg", // Lighter texture
+      "//unpkg.com/three-globe/example/img/earth-day.jpg",
       (earthTexture) => {
         const globeMaterial = new THREE.MeshPhongMaterial({
           map: earthTexture,
@@ -253,22 +251,9 @@ const SolarXGlobalReach = () => {
         scene.add(globe);
         globeMeshRef.current = globe;
 
-        // Atmosphere
         const atmosphereMaterial = new THREE.ShaderMaterial({
-          vertexShader: `
-                varying vec3 vNormal;
-                void main() {
-                vNormal = normalize(normalMatrix * normal);
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-          fragmentShader: `
-                varying vec3 vNormal;
-                void main() {
-                float intensity = pow(0.5 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0); // Adjusted intensity calculation
-                gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity * 0.4; // Adjusted alpha
-                }
-            `,
+          vertexShader: `varying vec3 vNormal; void main() { vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+          fragmentShader: `varying vec3 vNormal; void main() { float intensity = pow(0.5 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0); gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity * 0.4; }`,
           side: THREE.BackSide,
           blending: THREE.AdditiveBlending,
           transparent: true,
@@ -279,9 +264,8 @@ const SolarXGlobalReach = () => {
           atmosphereMaterial
         );
         scene.add(atmosphere);
-        atmosphereMeshRef.current = atmosphere;
-
-        setIsThreeJsReady(true); // Signal that globe base is ready
+        // atmosphereMeshRef.current = atmosphere; // Not strictly needed to store if not manipulating later
+        setIsThreeJsReady(true);
       },
       undefined,
       (error) => {
@@ -293,15 +277,13 @@ const SolarXGlobalReach = () => {
         const globe = new THREE.Mesh(globeGeometry, fallbackMaterial);
         scene.add(globe);
         globeMeshRef.current = globe;
-        setIsThreeJsReady(true); // Still signal ready with fallback
+        setIsThreeJsReady(true);
       }
     );
 
-    // Markers Group
     markersGroupRef.current = new THREE.Group();
     scene.add(markersGroupRef.current);
 
-    // Raycaster for clicking markers
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
@@ -312,17 +294,14 @@ const SolarXGlobalReach = () => {
         individualMarkersRef.current.length === 0
       )
         return;
-
       const rect = rendererRef.current.domElement.getBoundingClientRect();
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
       raycaster.setFromCamera(mouse, cameraRef.current);
       const intersects = raycaster.intersectObjects(
         individualMarkersRef.current,
         false
       );
-
       if (intersects.length > 0) {
         const clickedObject = intersects[0].object;
         if (clickedObject.userData && clickedObject.userData.id) {
@@ -332,28 +311,29 @@ const SolarXGlobalReach = () => {
         }
       }
     };
-    renderer.domElement.addEventListener("click", onMarkerClick);
+    const currentRendererEl = renderer.domElement; // Capture for cleanup
+    currentRendererEl.addEventListener("click", onMarkerClick);
 
-    // Animation Loop
     const animate = () => {
       animationFrameIdRef.current = requestAnimationFrame(animate);
       controls.update();
-      // Marker animations (e.g., pulsing)
       const time = Date.now() * 0.0025;
       individualMarkersRef.current.forEach((marker) => {
         if (marker.userData.isPulsing) {
-          // Add this flag to markers you want to pulse
           const baseScale = marker.userData.baseScale || 1;
           marker.scale.setScalar(
-            baseScale * (1 + 0.25 * Math.sin(time + marker.userData.id.length))
-          ); // Simple pulse
+            baseScale *
+              (1 + 0.25 * Math.sin(time + (marker.userData.id.length % 10)))
+          ); // Modulo for variety
         }
       });
-      renderer.render(scene, camera);
+      if (rendererRef.current && sceneRef.current && cameraRef.current) {
+        // Check refs before rendering
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
+      }
     };
     animate();
 
-    // Handle Resize
     const handleWindowResize = () => {
       if (
         !cameraRef.current ||
@@ -361,32 +341,34 @@ const SolarXGlobalReach = () => {
         !globeContainerRef.current
       )
         return;
-      const newWidth = isFullscreen
-        ? window.innerWidth
-        : globeContainerRef.current.clientWidth;
-      const newHeight = isFullscreen
-        ? window.innerHeight
-        : globeContainerRef.current.clientHeight; // Use clientHeight of container
+
+      let newWidth = isFullscreen ? window.innerWidth : 0;
+      let newHeight = isFullscreen ? window.innerHeight : 0;
+
+      if (!isFullscreen && globeContainerRef.current) {
+        newWidth = globeContainerRef.current.clientWidth;
+        newHeight = globeContainerRef.current.clientHeight;
+      }
+      if (newWidth === 0 || newHeight === 0) return; // Avoid division by zero if container not ready
 
       cameraRef.current.aspect = newWidth / newHeight;
       cameraRef.current.updateProjectionMatrix();
       rendererRef.current.setSize(newWidth, newHeight);
     };
     window.addEventListener("resize", handleWindowResize);
-    // Initial call to set size correctly if fullscreen state changes
-    if (isFullscreen) handleWindowResize();
+    if (isFullscreen) handleWindowResize(); // Initial resize if starting in fullscreen
 
-    // Cleanup
     return () => {
       if (animationFrameIdRef.current)
         cancelAnimationFrame(animationFrameIdRef.current);
       window.removeEventListener("resize", handleWindowResize);
-      renderer.domElement.removeEventListener("click", onMarkerClick);
+      currentRendererEl.removeEventListener("click", onMarkerClick); // Use captured element
 
-      controls.dispose();
-      renderer.dispose();
+      controlsRef.current?.dispose(); // Optional chaining
+      rendererRef.current?.dispose(); // Optional chaining
 
-      scene.traverse((object) => {
+      sceneRef.current?.traverse((object) => {
+        // Optional chaining
         if (object.geometry) object.geometry.dispose();
         if (object.material) {
           if (Array.isArray(object.material)) {
@@ -398,60 +380,52 @@ const SolarXGlobalReach = () => {
       });
       if (
         container &&
-        renderer.domElement &&
-        container.contains(renderer.domElement)
+        rendererRef.current?.domElement &&
+        container.contains(rendererRef.current.domElement)
       ) {
-        container.removeChild(renderer.domElement);
+        container.removeChild(rendererRef.current.domElement);
       }
-      rendererRef.current = null; // Allow re-initialization
+      rendererRef.current = null;
       sceneRef.current = null;
       cameraRef.current = null;
       globeMeshRef.current = null;
-      atmosphereMeshRef.current = null;
+      // atmosphereMeshRef.current = null;
       markersGroupRef.current = null;
       individualMarkersRef.current = [];
       setIsThreeJsReady(false);
     };
-  }, [isComponentLoading, isFullscreen]); // Re-run setup if fullscreen changes or after initial load
+  }, [isComponentLoading, isFullscreen]); // Only re-run if loading state or fullscreen state changes
 
-  // Effect to update markers when globeDataPoints changes or Three.js is ready
+  // Effect to update markers
   useEffect(() => {
     if (!isThreeJsReady || !markersGroupRef.current || !globeMeshRef.current)
       return;
 
-    // Clear existing markers
     individualMarkersRef.current.forEach((marker) => {
       marker.geometry.dispose();
-      // No need to dispose basic material like MeshBasicMaterial usually, but if complex, do it.
+      // marker.material.dispose(); // If material is unique per marker and complex
     });
-    markersGroupRef.current.clear(); // Removes all children
+    markersGroupRef.current.clear();
     individualMarkersRef.current = [];
 
-    // Add new markers
     globeDataPoints.forEach((point) => {
       const position = latLngToVector3(
         point.lat,
         point.lng,
         GLOBE_RADIUS + 0.01
-      ); // Slightly above surface
-
-      // INCREASED MARKER SIZE & SIMPLIFIED GEOMETRY
-      const markerRadius = 0.03; // Adjust this for desired "bigness"
-      const markerGeometry = new THREE.SphereGeometry(markerRadius, 16, 16); // Simpler sphere
+      );
+      const markerRadius = 0.025; // Slightly smaller for potentially more markers
+      const markerGeometry = new THREE.SphereGeometry(markerRadius, 16, 16);
       const markerMaterial = new THREE.MeshPhongMaterial({
-        // Phong for some lighting interaction
         color: point.color,
-        emissive: point.color, // Make it glow a bit with its own color
-        emissiveIntensity: 0.4,
-        shininess: 10,
+        emissive: point.color,
+        emissiveIntensity: 0.5, // Brighter emissive
+        shininess: 20,
       });
-
       const marker = new THREE.Mesh(markerGeometry, markerMaterial);
       marker.position.copy(position);
-      marker.lookAt(globeMeshRef.current.position); // Orient towards globe center (0,0,0)
-
-      marker.userData = { ...point, isPulsing: true, baseScale: 1 }; // Attach all point data + animation flags
-
+      marker.lookAt(globeMeshRef.current.position); // Ensures consistent orientation
+      marker.userData = { ...point, isPulsing: true, baseScale: 1 };
       markersGroupRef.current.add(marker);
       individualMarkersRef.current.push(marker);
     });
@@ -465,12 +439,12 @@ const SolarXGlobalReach = () => {
     if (controlsRef.current) controlsRef.current.autoRotate = true;
   };
 
-  // --- Render Helper Components --- (InfoPanel and SummaryCard remain largely the same)
+  // --- Render Helper Components ---
   const InfoPanel = ({ data, onClose }) => {
     if (!data) return null;
     return (
       <div
-        className={`fixed md:absolute top-0 right-0 h-full md:h-auto md:max-h-[calc(100%-2rem)] md:top-4 md:right-4 w-full md:w-80 lg:w-96 bg-white/95 backdrop-blur-md shadow-2xl rounded-none md:rounded-lg z-50 p-6 overflow-y-auto transition-transform transform ${
+        className={`fixed md:absolute top-0 right-0 h-full md:h-auto md:max-h-[calc(100%-2rem)] md:top-4 md:right-4 w-full max-w-md md:w-80 lg:w-96 bg-white/95 backdrop-blur-md shadow-2xl rounded-none md:rounded-lg z-50 p-5 sm:p-6 overflow-y-auto transition-transform transform ${
           isInfoPanelOpen
             ? "translate-x-0"
             : "translate-x-full md:translate-x-[110%]"
@@ -478,10 +452,10 @@ const SolarXGlobalReach = () => {
       >
         <div className="flex justify-between items-center mb-4">
           <h3
-            className="text-xl font-bold text-gray-800 truncate"
-            title={data.startupName || data.type}
+            className="text-lg sm:text-xl font-bold text-gray-800 truncate"
+            title={data.startupName}
           >
-            {data.startupName || data.type}
+            {data.startupName}
           </h3>
           <button
             onClick={onClose}
@@ -490,17 +464,22 @@ const SolarXGlobalReach = () => {
             <XCircle size={24} />
           </button>
         </div>
-        <div className="space-y-3 text-sm">
+        <div className="space-y-2.5 text-sm">
           <p>
-            <strong className="text-gray-600">Type:</strong>{" "}
+            <strong className="text-gray-600">Status:</strong>{" "}
             <span
               style={{
                 color: `#${new THREE.Color(data.color).getHexString()}`,
               }}
               className="font-semibold"
             >
+              <MapPin size={14} className="inline-block mr-1 mb-0.5" />
               {data.type}
             </span>
+          </p>
+          <p>
+            <strong className="text-gray-600">Location:</strong>{" "}
+            {data.startupLocationString}
           </p>
           {data.startupCountry !== "N/A" && (
             <p>
@@ -528,54 +507,58 @@ const SolarXGlobalReach = () => {
           )}
           {data.startupDescription &&
             data.startupDescription !== "No description available." && (
-              <div className="mt-3 pt-3 border-t">
+              <div className="mt-3 pt-3 border-t border-gray-200">
                 <strong className="text-gray-600 block mb-1">
                   Description:
                 </strong>
-                <p className="text-gray-700 text-xs max-h-32 overflow-y-auto">
+                <p className="text-gray-700 text-xs max-h-28 sm:max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400">
                   {data.startupDescription}
                 </p>
               </div>
             )}
         </div>
-        <div className="mt-6 text-center">
-          <a
-            href={`/startup/${data.startupId}`}
-            className="inline-block bg-orange-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-600 transition-colors"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View Startup Profile
-          </a>
-        </div>
+        {data.startupId !== "N/A" && (
+          <div className="mt-5 sm:mt-6 text-center">
+            <a
+              href={`/startup/${data.startupId}`}
+              className="inline-block bg-orange-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-600 transition-colors shadow-md hover:shadow-lg"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View Startup Profile
+            </a>
+          </div>
+        )}
       </div>
     );
   };
 
   const SummaryCard = ({ title, data, icon }) => (
-    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <div className="bg-white p-5 sm:p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100">
       <div className="flex items-center text-orange-600 mb-3">
-        {icon}
-        <h4 className="text-xl font-semibold ml-2 text-gray-700">{title}</h4>
+        {React.cloneElement(icon, { size: 22, className: "mr-2" })}
+        <h4 className="text-lg sm:text-xl font-semibold text-gray-700">
+          {title}
+        </h4>
       </div>
       {data.length > 0 ? (
-        <ul className="space-y-2 text-sm">
+        <ul className="space-y-1.5 text-sm">
           {data.map((item) => (
             <li
               key={item.name}
-              className="flex justify-between items-center text-gray-600"
+              className="flex justify-between items-center text-gray-600 py-1"
             >
               <span className="truncate pr-2" title={item.name}>
                 {item.name}
               </span>
-              <span className="font-semibold text-orange-500">
+              <span className="font-semibold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
                 {item.count} ({item.percentage}%)
               </span>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 pt-2">
           {isComponentLoading ? "Loading data..." : "No data available."}
         </p>
       )}
@@ -583,158 +566,130 @@ const SolarXGlobalReach = () => {
   );
 
   // --- Main Render ---
-  if (isComponentLoading && !globeDataPoints.length && !isThreeJsReady) {
-    /* Full page loader */
-  }
-  if (apiError) {
-    /* Error display */
-  }
-
   return (
     <>
       {isFullscreen && (
         <div
           className="fixed inset-0 bg-gray-900 z-[1000] flex items-center justify-center"
-          ref={isFullscreen ? globeContainerRef : null}
+          ref={isFullscreen ? globeContainerRef : null} // Three.js canvas will re-target here
         >
-          {/* Globe will be re-parented or re-initialized here by the useEffect due to isFullscreen change */}
+          {/* This div will either be empty initially or contain the re-rendered canvas */}
           <button
             onClick={toggleFullscreen}
             title="Exit Fullscreen"
-            className="absolute top-5 right-5 z-[1001] bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-all"
+            className="absolute top-4 right-4 sm:top-5 sm:right-5 z-[1001] bg-white/20 hover:bg-white/30 text-white p-2.5 sm:p-3 rounded-full backdrop-blur-sm transition-all"
           >
-            <Minimize size={24} />
+            <Minimize size={20} sm={24} />
           </button>
           <InfoPanel data={selectedMarkerData} onClose={closeInfoPanel} />
         </div>
       )}
 
       <section
-        className={`py-16 bg-gray-50 transition-all duration-300 ${
+        className={`py-12 sm:py-16 bg-gradient-to-b from-gray-50 via-white to-gray-50 transition-all duration-300 ${
           isFullscreen ? "hidden" : ""
         }`}
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <header className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 mb-4">
-              SolarX Global Reach
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <header className="text-center mb-10 sm:mb-12 md:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 mb-3 sm:mb-4">
+              Global Reach & Impact
             </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Visualizing our worldwide impact through innovative solar
-              solutions and strategic partnerships.
+            <div className="w-20 sm:w-24 h-1 sm:h-1.5 bg-gradient-to-r from-orange-500 to-red-500 mx-auto rounded-full mb-4 sm:mb-6"></div>
+            <p className="text-md sm:text-lg text-gray-600 max-w-3xl mx-auto">
+              Explore startup headquarters and our collective impact across
+              regions, sectors, and technologies.
             </p>
           </header>
 
           {(isComponentLoading ||
-            (!isThreeJsReady && globeDataPoints.length > 0)) && (
-            <div className="flex justify-center items-center min-h-[450px] lg:col-span-2 bg-gray-800 rounded-xl p-6">
-              <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
-              <p className="ml-3 text-orange-300">
+            (!isThreeJsReady && !apiError && allStartups.length > 0)) && (
+            <div className="flex justify-center items-center min-h-[300px] md:min-h-[450px] bg-gray-100 rounded-xl p-6 my-8">
+              <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 text-orange-500 animate-spin" />
+              <p className="ml-3 text-orange-600 text-lg">
                 {isComponentLoading
-                  ? "Loading impact data..."
-                  : "Initializing Globe..."}
+                  ? "Loading Impact Data..."
+                  : "Initializing Interactive Globe..."}
               </p>
             </div>
           )}
           {apiError && (
-            <div className="text-center text-red-600 p-4 bg-red-100 rounded-md lg:col-span-3">
-              <AlertTriangle className="inline-block mr-2" />
+            <div className="text-center text-red-700 p-4 sm:p-6 bg-red-50 border border-red-200 rounded-lg my-8 shadow">
+              <AlertTriangle className="inline-block mr-2 h-6 w-6" />
+              <span className="font-semibold">Could not load data:</span>{" "}
               {apiError}
             </div>
           )}
 
-          {!apiError && ( // Only render grid if no API error
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-              {/* Globe Section - container always present, content conditional */}
-              <div
-                className={`lg:col-span-2 bg-gradient-to-br from-gray-700 to-gray-900 p-1 rounded-2xl shadow-2xl ${
-                  isComponentLoading ? "hidden" : "block"
-                }`}
-              >
-                <div className="bg-gray-800 p-4 sm:p-6 rounded-xl">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-2xl font-semibold text-white">
-                      Interactive Impact Globe
-                    </h3>
-                    <button
-                      onClick={toggleFullscreen}
-                      title="Toggle Fullscreen"
-                      className="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-full transition-all text-sm flex items-center disabled:opacity-50"
-                      disabled={!isThreeJsReady}
+          {!apiError &&
+            !isComponentLoading && ( // Only render grid when data is ready and no error
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8 items-start">
+                {/* Globe Section */}
+                <div className="lg:col-span-3 bg-gradient-to-br from-gray-700 to-gray-900 p-0.5 sm:p-1 rounded-xl sm:rounded-2xl shadow-2xl">
+                  <div className="bg-gray-800 p-4 sm:p-6 rounded-lg sm:rounded-xl">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 sm:mb-4">
+                      <h3 className="text-xl sm:text-2xl font-semibold text-white mb-2 sm:mb-0">
+                        Startup Headquarters
+                      </h3>
+                      <button
+                        onClick={toggleFullscreen}
+                        title="Toggle Fullscreen"
+                        className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm flex items-center disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+                        disabled={!isThreeJsReady}
+                      >
+                        <Fullscreen size={16} sm={18} />
+                        <span className="ml-1.5">Fullscreen</span>
+                      </button>
+                    </div>
+                    <div
+                      ref={!isFullscreen ? globeContainerRef : null} // Assign ref only when not in fullscreen
+                      className="w-full h-[400px] md:h-[450px] lg:h-[500px] rounded-md sm:rounded-lg overflow-hidden relative cursor-grab bg-gray-800/50" // Ensure bg for placeholder visibility
                     >
-                      <Fullscreen size={18} />
-                      <span className="ml-1.5 hidden sm:inline">
-                        Fullscreen
-                      </span>
-                    </button>
-                  </div>
-                  {/* Ensure this div has explicit height for Three.js canvas */}
-                  <div
-                    ref={!isFullscreen ? globeContainerRef : null}
-                    className="w-full h-[450px] rounded-lg overflow-hidden relative cursor-grab bg-gray-700/30"
-                  >
-                    {/* Placeholder will be covered by canvas once renderer appends it */}
-                    {!isThreeJsReady && !isComponentLoading && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Loader2 className="w-10 h-10 text-orange-400 animate-spin" />
-                        <p className="ml-2 text-orange-300">
-                          Preparing Globe...
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs">
-                    {Object.entries(PRESENCE_TYPE_COLORS_HEX).map(
-                      ([type, colorValue]) => (
-                        <div key={type} className="flex items-center">
-                          <span
-                            style={{
-                              backgroundColor: `#${new THREE.Color(
-                                colorValue
-                              ).getHexString()}`,
-                            }}
-                            className="w-3 h-3 rounded-full mr-1.5 border border-white/20"
-                          ></span>
-                          <span className="text-gray-300">{type}</span>
-                        </div>
-                      )
-                    )}
+                      {!isThreeJsReady &&
+                        !isComponentLoading && ( // Show only if Three.js isn't ready but main loading is done
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                            <Loader2 className="w-8 h-8 text-orange-400 animate-spin mb-2" />
+                            <p className="text-orange-300 text-sm">
+                              Preparing Interactive Globe...
+                            </p>
+                          </div>
+                        )}
+                      {/* Canvas will be appended here by Three.js */}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Info and Summaries - always present unless API error */}
-              <div
-                className={`space-y-8 lg:mt-0 ${
-                  isComponentLoading ? "hidden" : "block"
-                }`}
-              >
-                {isInfoPanelOpen && selectedMarkerData && !isFullscreen && (
-                  <div className="bg-white p-6 rounded-xl shadow-xl border-t-4 border-orange-500">
-                    <InfoPanel
-                      data={selectedMarkerData}
-                      onClose={closeInfoPanel}
-                    />
-                  </div>
-                )}
-                <SummaryCard
-                  title="Regional Focus"
-                  data={regionSummary}
-                  icon={<GlobeIconJsx size={20} />}
-                />
-                <SummaryCard
-                  title="Sector Impact"
-                  data={sectorSummary}
-                  icon={<CheckCircle size={20} />}
-                />
-                <SummaryCard
-                  title="Key Technologies"
-                  data={technologySummary}
-                  icon={<Cpu size={20} />}
-                />
+                {/* Info and Summaries */}
+                <div className="col-span-1 lg:col-span-2 space-y-6 md:space-y-8">
+                  {isInfoPanelOpen && selectedMarkerData && !isFullscreen && (
+                    // InfoPanel is rendered conditionally in its original position when not fullscreen
+                    // It is absolutely positioned relative to the screen in fullscreen mode
+                    <div className="bg-white rounded-xl shadow-xl border-t-4 border-orange-500">
+                      {/* Re-render InfoPanel here for non-fullscreen to keep it in layout flow */}
+                      <InfoPanel
+                        data={selectedMarkerData}
+                        onClose={closeInfoPanel}
+                      />
+                    </div>
+                  )}
+                  <SummaryCard
+                    title="Regional Focus"
+                    data={regionSummary}
+                    icon={<GlobeIconJsx />}
+                  />
+                  <SummaryCard
+                    title="Sector Impact"
+                    data={sectorSummary}
+                    icon={<CheckCircle />}
+                  />
+                  <SummaryCard
+                    title="Key Technologies"
+                    data={technologySummary}
+                    icon={<Cpu />}
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </section>
     </>

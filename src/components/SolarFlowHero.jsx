@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Bolt, DollarSign } from "lucide-react";
 import axios from "axios";
+import { getLocationFromLatLong } from "../utils/strapiHelper";
 
 // import { fetchCompanyHeroData } from '../services/api';
 
@@ -80,12 +81,16 @@ const SolarFlowHero = ({ companyId }) => {
             id: company.id,
             name: company.Name,
             description: company.Description[0].children[0].text,
-            website: company.Website_URL ,
+            website: company.Website_URL,
             contactEmail: company.Contact_Email,
             foundingYear: company.Founding_Year,
-            headquarters: company.Location,
+            headquarters:
+              (await getLocationFromLatLong(
+                company.HQ_Location.lat,
+                company.HQ_Location.lng
+              )) || "Location not specified",
             teamSize: company.Team_Size,
-            imageUrl: logoUrl, 
+            imageUrl: logoUrl,
             coverImage: company.Cover_Image.url,
           };
 
@@ -141,83 +146,37 @@ const SolarFlowHero = ({ companyId }) => {
     <div className="w-full min-h-screen bg-gray-100 flex items-center justify-center p-4 mt-[40px]">
       <div className="max-w-6xl w-full flex flex-col lg:flex-row items-center gap-8">
         {/* Left content */}
-        <div
-          className={`w-full lg:w-1/2 transition-all duration-700 ${
-            showContent
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-8"
-          }`}
-        >
-          <div className="text-5xl md:text-6xl font-bold mb-6">
-            {companyData && companyData.name ? (
-              <span className="text-gray-800">{companyData.name}</span>
-            ) : (
-              <>
-                <span className="text-orange-500">Solar</span>
-                <span className="text-gray-800">Flow</span>
-              </>
+        <div className={`w-full lg:w-1/2`}>
+          <div className="text-5xl font-bold mb-6">
+            {companyData && companyData.name && (
+              <span className="text-orange-600 text-shadow">
+                {companyData.name}
+              </span>
             )}
           </div>
 
           {/* Company description */}
-          <p className="text-gray-700 text-lg mb-4">
-            {companyData && companyData.description ? (
+          <p className="text-gray-700 text-md mb-4">
+            {companyData && companyData.description && (
               <span>{companyData.description}</span>
-            ) : (
-              <>
-                Transforming renewable energy access in developing regions with
-                cutting-edge technology that's{" "}
-                <span className="text-orange-500 font-semibold">
-                  40% more efficient
-                </span>{" "}
-                and{" "}
-                <span className="text-orange-500 font-semibold">
-                  30% less expensive
-                </span>
-              </>
             )}
           </p>
-
-          {/* Company details section removed as requested */}
-
-          <div className="flex flex-col sm:flex-row gap-4 mt-8">
-            <a
-              href="#request-demo"
-              className="bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-6 rounded-md transition-all hover:shadow-lg hover:scale-105 text-center"
-            >
-              Request Demo
-            </a>
-            <a
-              href="#learn-more"
-              className="border-2 border-gray-800 text-gray-800 hover:bg-gray-100 font-medium py-3 px-6 rounded-md transition-all hover:shadow-lg hover:scale-105 text-center"
-            >
-              Learn More
-            </a>
-          </div>
         </div>
 
         {/* Right side showcase - Only the logo image */}
         <div className="w-full lg:w-1/2 relative">
-          <div
-            className={`bg-white rounded-xl h-64 md:h-96 shadow-xl flex items-center justify-center overflow-hidden transition-all duration-700 ${
-              showContent
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-12"
-            }`}
-          >
-            {/* Company logo image */}
-            {companyData && companyData.imageUrl ? (
-              <img
-                src={`http://localhost:1337${companyData.coverImage}`}
-                alt={companyData.name || "Company logo"}
-                className="w-full h-full object-contain p-4"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full w-full">
-                <div className="text-gray-400 text-xl">No logo available</div>
-              </div>
-            )}
-          </div>
+          {/* Company logo image */}
+          {companyData && companyData.imageUrl ? (
+            <img
+              src={`http://localhost:1337${companyData.coverImage}`}
+              alt={companyData.name || "Cover Image"}
+              className="w-full h-full object-contain rounded-lg shadow-lg"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full w-full">
+              <div className="text-gray-400 text-xl">No logo available</div>
+            </div>
+          )}
         </div>
       </div>
     </div>

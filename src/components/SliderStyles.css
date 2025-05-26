@@ -2,7 +2,8 @@
 .slider-container {
   margin-top: 2rem;
   margin-bottom: 2rem;
-  padding-bottom: 3rem; /* Add space for dots */
+  padding-bottom: 3rem;
+  /* Add space for dots */
   width: 100%;
   max-width: 1200px;
   margin-left: auto;
@@ -11,13 +12,15 @@
 
 /* Company slider specific styles */
 .company-slider {
-  margin: 0 -15px; /* Compensate for slide padding */
+  margin: 0 -15px;
+  /* Compensate for slide padding */
 }
 
 /* Style the dots */
 .slick-dots li button:before {
   font-size: 12px;
-  color: #f97316; /* Orange color to match theme */
+  color: #f97316;
+  /* Orange color to match theme */
   opacity: 0.5;
 }
 
@@ -27,7 +30,7 @@
 }
 
 /* Style the arrows */
-.slick-prev, 
+.slick-prev,
 .slick-next {
   width: 40px;
   height: 40px;
@@ -37,7 +40,7 @@
   transition: all 0.3s ease;
 }
 
-.slick-prev:hover, 
+.slick-prev:hover,
 .slick-next:hover {
   background-color: rgba(249, 115, 22, 0.2);
 }
@@ -50,7 +53,7 @@
   right: 10px;
 }
 
-.slick-prev:before, 
+.slick-prev:before,
 .slick-next:before {
   font-size: 30px;
   color: #f97316;
@@ -63,7 +66,7 @@
 }
 
 /* Make cards larger and more prominent */
-.slider-container .slick-slide > div {
+.slider-container .slick-slide>div {
   margin: 0 15px;
 }
 
@@ -78,7 +81,8 @@
 
 /* Fixed dimensions for cards */
 .company-card {
-  height: 450px !important; /* Fixed height for all cards */
+  height: 450px !important;
+  /* Fixed height for all cards */
   width: 100% !important;
   display: flex !important;
   flex-direction: column !important;
@@ -141,7 +145,7 @@
   display: flex !important;
 }
 
-.slick-slide > div {
+.slick-slide>div {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -152,12 +156,12 @@
   .slick-prev {
     left: -5px;
   }
-  
+
   .slick-next {
     right: -5px;
   }
-  
-  .slick-prev:before, 
+
+  .slick-prev:before,
   .slick-next:before {
     font-size: 30px;
   }

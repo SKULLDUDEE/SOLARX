@@ -44,7 +44,7 @@ export const getCompanyIdsByName = async () => {
   try {
     const response = await fetch('http://localhost:1337/api/companies');
     const data = await response.json();
-    
+
     if (data && data.data && Array.isArray(data.data)) {
       const mapping = {};
       data.data.forEach(company => {
@@ -60,3 +60,16 @@ export const getCompanyIdsByName = async () => {
     return {};
   }
 };
+
+
+export async function getLocationFromLatLong(latitude, longitude) {
+  const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=6`);
+  const data = await response.json();
+  console.log('Location data:', data.display_name);
+
+  if (data && data.display_name) {
+    return data.display_name;
+  } else {
+    return 'Location not found';
+  }
+}

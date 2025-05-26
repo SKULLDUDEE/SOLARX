@@ -8,8 +8,8 @@
   --secondary-color: #ff5e00;
   --background-color: #fff;
   --text-color: #333;
-  --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  
+  --font-family: sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+
   /* Responsive spacing variables */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
@@ -18,7 +18,7 @@
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
   --spacing-3xl: 4rem;
-  
+
   /* Responsive font size variables */
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
@@ -62,6 +62,7 @@ a {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -73,7 +74,10 @@ img {
   display: block;
 }
 
-button, input, textarea, select {
+button,
+input,
+textarea,
+select {
   font-family: inherit;
   font-size: inherit;
 }
@@ -105,8 +109,15 @@ button, input, textarea, select {
 
 /* Animation utilities */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fadeIn {
@@ -114,8 +125,13 @@ button, input, textarea, select {
 }
 
 @keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
 .animate-slideInRight {
@@ -123,8 +139,13 @@ button, input, textarea, select {
 }
 
 @keyframes slideOutRight {
-  from { transform: translateX(0); }
-  to { transform: translateX(100%); }
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .animate-slideOutRight {
@@ -155,13 +176,23 @@ button, input, textarea, select {
 
 /* Mobile menu animations */
 @keyframes menuFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes menuFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 .mobile-menu-overlay-enter {
@@ -175,7 +206,8 @@ button, input, textarea, select {
 /* Prevent content shift on mobile */
 @media (max-width: 640px) {
   body.mobile-menu-open {
-    padding-right: 0 !important; /* Prevents content shift when scrollbar disappears */
+    padding-right: 0 !important;
+    /* Prevents content shift when scrollbar disappears */
   }
 }
 
@@ -184,19 +216,19 @@ button, input, textarea, select {
   html {
     font-size: 14px;
   }
-  
+
   .container {
     padding: 0 0.75rem;
   }
-  
+
   .hide-sm {
     display: none !important;
   }
-  
+
   .text-center-sm {
     text-align: center;
   }
-  
+
   .flex-col-sm {
     flex-direction: column;
   }
@@ -251,4 +283,38 @@ button, input, textarea, select {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
+}
+
+
+
+@keyframes scroll-x-continuous {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    /*
+      This transform moves the track by the width of ONE set of original items.
+      If your 'scrolling-track-inner' contains TWO sets of items (original + duplicate),
+      moving it by the width of ONE set will bring the duplicate set perfectly into place
+      to start over, creating the illusion of an infinite loop.
+    */
+    transform: translateX(calc(-100% / 2));
+    /* If duplicated once, so total is 200% of original */
+    /* If you duplicate twice (total 300% of original), it would be calc(-100% / 3) and so on,
+       but generally duplicating once (total 200%) and translating by half of that (width of original set)
+       is the standard and easiest to manage. */
+  }
+}
+
+.continuous-scrolling-track {
+  display: flex;
+  /* Essential for horizontal layout of items */
+  /* The width will be set by its content (the duplicated items) */
+  animation: scroll-x-continuous 40s linear infinite;
+  /* Duration is now dynamic via inline style */
+}
+
+.metrics-scroller-viewport:hover .continuous-scrolling-track {
+  animation-play-state: paused;
 }

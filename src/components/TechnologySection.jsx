@@ -48,11 +48,16 @@ export default function TechnologySection({ companyId }) {
   }, [companyId]);
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
-      <div className="flex items-center mb-6">
-        <div className="w-16 h-1 bg-orange-400 mr-3" />
-        <h1 className="text-3xl font-bold text-gray-900">Technologies</h1>
-      </div>
+    <div className="max-w-7xl mx-auto p-4 lg:p-0 my-20">
+          <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
+            <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+            <h1 className="text-3xl md:text-5xl font-bold mb-1">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+                Technologies
+              </span>
+            </h1>
+            <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+          </div>
 
       {loading && (
         <div className="flex justify-center items-center py-12">

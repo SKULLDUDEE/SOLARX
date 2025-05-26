@@ -1,47 +1,54 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { fetchCompanyById } from "../services/api";
+import { getLocationFromLatLong } from "../utils/strapiHelper";
 
 export default function CompanyCard({ companyId, regionClass }) {
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch company details when the component mounts
   useEffect(() => {
     const fetchCompanyDetails = async () => {
       try {
         setLoading(true);
+        setError(null); // Reset error on new fetch
         const response = await fetchCompanyById(companyId);
 
         if (response && response.data) {
-          // Log the response for debugging
-          console.log(`Company ${companyId} data:`, response.data);
-
-          // Process the company data - direct access to fields
           const companyData = response.data;
-          console.log("Company data:", companyData);
+          console.log(`Company ${companyId} raw data:`, companyData);
 
-          setCompany({
+          const newCompanyState = {
             id: companyData.id,
             name: companyData.Name || "Unnamed Company",
-            region: companyData.Regions || "other",
-            regionName: getRegionName(companyData.Regions),
-            location: companyData.Location || "Location not specified",
+            // Ensure 'region' is an array, even if Regions is null/undefined
+            region: companyData.Regions || [],
+            // regionName: companyData.Regions, // This seems redundant if 'region' holds the array
+            location:
+              (await getLocationFromLatLong(
+                companyData.HQ_Location.lat,
+                companyData.HQ_Location.lng
+              )) || "Location not specified",
             description: extractDescription(
-              companyData.Description[0].children[0].text
+              // Safer access to nested properties
+              companyData.Description?.[0]?.children?.[0]?.text
             ),
-            category: companyData.Sector_Tags[0], // Default category
-            // categoryColor: getCategoryColor('Clean Energy'),
+            category: companyData.Sector_Tags?.[0] || "General", // Default category
+            // categoryColor: getCategoryColor('Clean Energy'), // You need to define/use this
             logo: extractImageData(companyData.Company_Logo),
             coverImage: extractImageData(companyData.Cover_Image),
-          });
+          };
+          setCompany(newCompanyState);
+          console.log(`Company ${companyId} processed state:`, newCompanyState); // Log new state
         } else {
           setError("Company data not found");
+          setCompany(null); // Clear company on error
         }
       } catch (err) {
         console.error(`Error fetching company ${companyId}:`, err);
         setError("Failed to load company details");
+        setCompany(null); // Clear company on error
       } finally {
         setLoading(false);
       }
@@ -52,21 +59,11 @@ export default function CompanyCard({ companyId, regionClass }) {
     }
   }, [companyId]);
 
-  // Helper function to extract description from structured content
   const extractDescription = (introduction) => {
-    // Log the introduction structure for debugging
-    console.log("Introduction structure:", introduction);
-
+    // console.log("Introduction structure for description:", introduction);
     if (!introduction) return "No description available";
-
-    // Handle different possible structures
     try {
-      // If it's already a string
-      if (typeof introduction === "string") {
-        return introduction;
-      }
-
-      // If it's an array of blocks (Strapi rich text format)
+      if (typeof introduction === "string") return introduction;
       if (Array.isArray(introduction)) {
         if (
           introduction[0]?.children &&
@@ -78,44 +75,30 @@ export default function CompanyCard({ companyId, regionClass }) {
             .join(" ");
         }
       }
-
-      // If it's a nested data structure
       if (introduction.data && Array.isArray(introduction.data)) {
         return extractDescription(introduction.data);
       }
     } catch (err) {
       console.error("Error extracting description:", err);
     }
-
     return "No description available";
   };
 
-  // Use a consistent region name
-  const getRegionName = (region) => {
-    return region || "Global";
-  };
-
-  // Helper function to extract image data from Strapi response
-  const extractImageData = (logoData) => {
-    // Log the logo structure for debugging
-    console.log("Logo structure:", logoData);
-
-    if (!logoData) return null;
-
+  const extractImageData = (imageDataField) => {
+    // console.log("Image data structure:", imageDataField);
+    if (!imageDataField) return null;
     try {
-      // Based on the API response we saw, the Logo is an array of media objects
-      if (Array.isArray(logoData) && logoData.length > 0) {
-        console.log("logo data is an array");
-        const image = logoData[0];
+      if (Array.isArray(imageDataField) && imageDataField.length > 0) {
+        const image = imageDataField[0];
+        if (!image) return null;
 
-        // Return the image with its URL
-        if (image && image.url) {
-          return image;
-        }
-
-        // If the image has formats, use the medium format or the original
-        if (image && image.formats) {
-          const format = image.formats.medium || image.formats.small || image;
+        // Prefer specific formats if available (common in Strapi)
+        if (image.formats) {
+          const format =
+            image.formats.medium ||
+            image.formats.small ||
+            image.formats.thumbnail ||
+            image;
           return {
             url: format.url,
             width: format.width,
@@ -123,34 +106,41 @@ export default function CompanyCard({ companyId, regionClass }) {
             alt: image.alternativeText || "",
           };
         }
+        // Fallback to top-level image data if formats aren't present but url is
+        if (image.url)
+          return {
+            url: image.url,
+            width: image.width,
+            height: image.height,
+            alt: image.alternativeText || "",
+          };
 
-        console.log("IMAGE DATA:", image);
-
-        return image;
-      } else if (logoData.url) {
-        // If it's a single object with a URL
+        return image; // Final fallback
+      } else if (imageDataField.url) {
+        // Handles if imageDataField is a single image object
         return {
-          url: logoData.url,
-          width: logoData.width,
-          height: logoData.height,
-          alt: logoData.alternativeText || "",
+          url: imageDataField.url,
+          width: imageDataField.width,
+          height: imageDataField.height,
+          alt: imageDataField.alternativeText || "",
         };
       }
     } catch (err) {
       console.error("Error extracting image data:", err);
     }
-
     return null;
   };
 
   // Get color for category
-  const getCategoryColor = (category) => {
+  // You'll need to use this if you want dynamic category colors.
+  // For now, I'll use a static color for the example, but you can re-enable this.
+  const getCategoryColorName = (category) => {
     const categoryColorMap = {
-      "Rural": "blue",
-      "Urban": "green",
-      "Agriculture": "purple",
-      "Healthcare": "orange",
-      "Education": "red",
+      Rural: "blue",
+      Urban: "green",
+      Agriculture: "purple",
+      Healthcare: "orange",
+      Education: "red",
       "Small Business / SMEs": "blue",
       "Women Empowerment": "indigo",
       "Electric Mobility": "green",
@@ -159,103 +149,119 @@ export default function CompanyCard({ companyId, regionClass }) {
       "Off-grid Communities": "pink",
       "Utility-Scale / Grid": "teal",
       "Public Infrastructure / Amenities": "cyan",
-      "Tourism": "rose",
+      Tourism: "rose",
       "Cold Chain / Perishables": "lime",
       "Poultry / Livestock": "amber",
       "Manufacturing / Industrial": "slate",
       "EV Fleets": "violet",
       "Remote Monitoring / Telecom": "fuchsia",
       "Microfinance / Financial Inclusion": "zinc",
+      General: "gray",
+      // Add more categories as needed
     };
-
-    return categoryColorMap[category] || "blue";
+    return categoryColorMap[category] || "gray"; // Default color if category not found
   };
 
-  // Show loading state
   if (loading) {
     return (
-      <div className="bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl animate-pulse">
-        <div className="h-40 sm:h-48 bg-gray-200"></div>
-        <div className="p-4 sm:p-6">
-          <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+      <div className="group flex flex-col bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl animate-pulse h-full">
+        <div className="h-40 sm:h-48 bg-gray-300"></div>
+        <div className="p-4 sm:p-6 flex-grow flex flex-col justify-between">
+          <div>
+            <div className="h-6 bg-gray-300 rounded w-3/4 mb-3"></div>
+            <div className="h-4 bg-gray-300 rounded w-1/2 mb-2"></div>
+            <div className="h-4 bg-gray-300 rounded w-full mb-4"></div>
+          </div>
+          <div className="flex justify-between items-center mt-auto">
+            <div className="h-6 w-20 bg-gray-300 rounded-full"></div>
+            <div className="h-4 w-24 bg-gray-300 rounded"></div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Show error state
   if (error || !company) {
     return (
-      <div className="bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl">
-        <div className="p-4 sm:p-6 text-center">
-          <p className="text-red-500">Error loading company</p>
+      <div className="group flex flex-col bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl h-full">
+        <div className="p-4 sm:p-6 text-center flex-grow flex flex-col justify-center items-center">
+          <p className="text-red-500 font-semibold">Error Loading Company</p>
+          {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
         </div>
       </div>
     );
   }
 
-  // Log the IDs for debugging
-  console.log(
-    `CompanyCard - companyId prop: ${companyId}, company.id from API: ${company?.id}`
-  );
+  const categoryColorName = getCategoryColorName(company.category);
+  const categoryTextColorClass = `text-${categoryColorName}-700`;
+  const categoryBgColorClass = `bg-${categoryColorName}-100`;
 
-  // Render company card
   return (
     <Link
-      to={`/startup/${companyId}`}
-      className="block bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl hover-scale transition-all company-card"
+      to={`/startup/${company.id}`} // Use company.id from state
+      className="flex flex-col h-full bg-white rounded-xl max-w-xl sm:rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out group"
     >
-      <div className="relative overflow-hidden image-container">
-        {/* Use company cover image if available, otherwise use placeholder */}
-        {company.coverImage ? (
+      <div className="relative overflow-hidden image-container h-40 sm:h-48">
+        {company.coverImage && company.coverImage.url ? (
           <img
-            src={`http://localhost:1337${company.coverImage.url}`}
+            src={
+              company.coverImage.url.startsWith("http")
+                ? company.coverImage.url
+                : `http://localhost:1337${company.coverImage.url}`
+            }
             alt={company.name}
-            className="w-full h-full object-cover transition-all hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <img
-            src={`/api/placeholder/600/400`}
-            alt={company.name}
-            className="w-full h-full object-cover transition-all hover:scale-110"
-          />
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+            <span className="text-gray-400 text-sm">No Cover Image</span>
+          </div>
         )}
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/70 to-transparent"></div>
-        <div
-          className={`absolute top-2 sm:top-4 right-2 sm:right-4 ${regionClass} text-white text-xs font-bold px-2 sm:px-4 py-1 rounded-full`}
-        >
-          {company.regionName}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+        <div className="absolute top-2.5 right-2.5 flex flex-row justify-between items-end space-x-1.5 z-10">
+          {company.region &&
+            company.region.length > 0 &&
+            company.region.map((regionItem, idx) => (
+              <div
+                key={`${company.id}-region-${idx}`}
+                className={`${regionClass} text-white text-[10px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow`}
+              >
+                {regionItem}
+              </div>
+            ))}
         </div>
       </div>
 
-      <div className="p-4 sm:p-6 content-container">
-        <h3 className="text-lg sm:text-xl font-bold mb-1 text-gray-900 line-clamp-1">
+      <div className="p-4 sm:p-5 flex flex-col flex-grow">
+        <h3
+          className="text-base sm:text-lg font-bold mb-1 text-gray-800 line-clamp-1"
+          title={company.name}
+        >
           {company.name}
         </h3>
-        <p className="text-sm text-gray-600 mb-3">{company.location}</p>
         <p
-          className="text-sm text-gray-700 mb-4 h-5 overflow-hidden whitespace-nowrap text-ellipsis"
-          style={{ maxWidth: "100%", display: "block" }}
+          className="text-xs sm:text-sm text-gray-500 mb-2 line-clamp-1"
+          title={company.location}
+        >
+          {company.location}
+        </p>
+        <p
+          className="text-sm text-gray-700 mb-3 line-clamp-2 flex-grow" // flex-grow to push footer down
+          style={{ minHeight: "2.5rem" }} // Approx 2 lines of text
+          title={company.description}
         >
           {company.description}
         </p>
-
-        <div className="flex justify-between items-center">
+        <div className="mt-auto flex justify-between items-center pt-2 border-t border-gray-200">
           <span
-            className={`inline-block px-3 py-1 text-xs font-semibold text-${company.categoryColor}-700 bg-${company.categoryColor}-100 rounded-full`}
+            className={`inline-block px-2.5 py-1 text-xs font-semibold ${categoryTextColorClass} ${categoryBgColorClass} rounded-full`}
+            title={`Category: ${company.category}`}
           >
             {company.category}
           </span>
-          <Link
-            to={`/startup/${companyId}`}
-            className="text-orange-600 hover:text-orange-700 text-sm font-medium hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="text-orange-600 hover:text-orange-700 text-xs sm:text-sm font-medium group-hover:underline">
             View Details →
-          </Link>
+          </div>
         </div>
       </div>
     </Link>

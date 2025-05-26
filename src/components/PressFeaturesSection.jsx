@@ -115,14 +115,14 @@ export default function PressFeaturesSection({ companyId }) {
   return (
     <div className="max-w-7xl mx-auto px-6 sm:px-10 py-16 bg-white">
       {/* Header */}
-      <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent mb-4 animate-fade-in">
-          Media Coverage {awards.length > 0 && "& Recognition"}
+      <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
+        <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+        <h1 className="text-3xl md:text-5xl font-bold mb-1">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+            Media Coverage
+          </span>
         </h1>
-        <p className="text-gray-600 text-lg animate-fade-in-delay">
-          Our journey has been featured in leading publications
-          {awards.length > 0 && " and recognized by prestigious organizations"}.
-        </p>
+        <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
       </div>
 
       {/* Loading State */}
@@ -157,14 +157,6 @@ export default function PressFeaturesSection({ companyId }) {
                   : "mb-8"
               }`}
             >
-              {mediaCoverage.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4 relative after:content-[''] after:absolute after:bottom-[-8px] after:left-0 after:w-16 after:h-1 after:bg-orange-500 after:rounded-full">
-                    Media Coverage
-                  </h2>
-                </div>
-              )}
-
               {awards.length > 0 && (
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-4 relative after:content-[''] after:absolute after:bottom-[-8px] after:left-0 after:w-16 after:h-1 after:bg-orange-500 after:rounded-full">

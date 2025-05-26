@@ -9,10 +9,10 @@ import BusinessSummary from '../components/BusinessSummary';
 import TechnologySection from '../components/TechnologySection';
 import ImpactMetrics from '../components/ImpactMetrics';
 import FundingJourney from '../components/FundingJourney';
-import ClimateImpactMetrics from '../components/ClimateImpactMetrics';
-import SuccessStoriesSlider from '../components/SuccessStoriesSlider';
+// import ClimateImpactMetrics from '../components/ClimateImpactMetrics';
+// import SuccessStoriesSlider from '../components/SuccessStoriesSlider';
 import PressFeaturesSection from '../components/PressFeaturesSection';
-import CompanyTimelineSection from '../components/CompanyTimelineSection';
+// import CompanyTimelineSection from '../components/CompanyTimelineSection';
 import ProjectGallery from '../components/ProjectGallery';
 import GlobalPresence from '../components/GlobalPresence';
 import Footer from '../components/Footer';
@@ -38,17 +38,17 @@ export default function StartupDetail() {
           // console.log(`StartupDetail - Checking if company exists with ID: ${id}`);
           
           // First get all companies to see what's available
-          try {
-            const allCompaniesResponse = await fetch(`http://localhost:1337/api/startups`);
-            const allCompanies = await allCompaniesResponse.json();
-            // console.log("StartupDetail - All available companies:", allCompanies);
+          // try {
+          //   const allCompaniesResponse = await fetch(`http://localhost:1337/api/startups`);
+          //   const allCompanies = await allCompaniesResponse.json();
+          //   // console.log("StartupDetail - All available companies:", allCompanies);
             
-            if (allCompanies && allCompanies.data) {
-              // console.log(`StartupDetail - Available company IDs: ${allCompanies.data.map(c => c.id).join(', ')}`);
-            }
-          } catch (listError) {
-            console.error("StartupDetail - Error fetching company list:", listError);
-          }
+          //   if (allCompanies && allCompanies.data) {
+          //     // console.log(`StartupDetail - Available company IDs: ${allCompanies.data.map(c => c.id).join(', ')}`);
+          //   }
+          // } catch (listError) {
+          //   console.error("StartupDetail - Error fetching company list:", listError);
+          // }
           
           const response = await fetch(`http://localhost:1337/api/startups?filters[id][$eq]=${id}&populate=*`);
           const data = await response.json();

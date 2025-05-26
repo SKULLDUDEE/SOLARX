@@ -1,44 +1,54 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { fetchCompanies } from '../services/api';
-import CompanyCard from './CompanyCard';
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
-import './SliderStyles.css';
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { fetchCompanies } from "../services/api"; // Assuming this fetches all companies
+import CompanyCard from "./CompanyCard";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import "./SliderStyles.css"; // Your custom slider styles
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  Loader2,
+  AlertTriangle,
+} from "lucide-react"; // Example icons
+
+const REGIONS_OPTIONS = [
+  "All Regions",
+  "Asia-Pacific",
+  "LAC",
+  "MENA",
+  "Africa",
+];
 
 export default function SolarXWinners() {
-  // Create references for the slider
   const sliderRef = useRef(null);
-  // Removed activeRegion state since we're not filtering by region anymore
-  const [companies, setCompanies] = useState([]);
+  const [allCompaniesRaw, setAllCompaniesRaw] = useState(null); // Store raw API response
+  const [processedCompanies, setProcessedCompanies] = useState([]); // Store companies with id and regions
+  const [selectedRegion, setSelectedRegion] = useState(REGIONS_OPTIONS[0]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Empty array for when no companies are found
-  const emptyCompanies = [];
-  
+
   // Fetch companies data from API
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch all companies without filtering
-        const response = await fetchCompanies();
-        
+        setError(null);
+        const response = await fetchCompanies(); // Fetches all companies
+
         if (response && response.data) {
-          // Log the response to help with debugging
-          console.log('API Response:', response);
-          setCompanies(response);
+          // console.log('API Response for SolarXWinners:', response);
+          setAllCompaniesRaw(response.data); // Assuming response.data is the array of companies
         } else {
-          // Fallback to default data if API returns empty
-          console.log('No data in API response, using defaults');
-          setCompanies([]);
+          console.warn(
+            "No data in API response for SolarXWinners, or structure is unexpected."
+          );
+          setAllCompaniesRaw([]);
         }
       } catch (err) {
-        console.error('Error fetching companies:', err);
-        setError('Failed to load companies. Please try again later.');
-        // Fallback to default data on error
-        setCompanies([]);
+        console.error("Error fetching companies for SolarXWinners:", err);
+        setError("Failed to load SolarX Winners. Please try again later.");
+        setAllCompaniesRaw([]);
       } finally {
         setLoading(false);
       }
@@ -46,197 +56,227 @@ export default function SolarXWinners() {
 
     fetchData();
   }, []);
-  
-  // This function is now used only in the CompanyCard component
-  // Removing to avoid unused variable warnings
-  
-  // Default region class for all companies
-  const defaultRegionClass = 'orange-gradient';
-  
-  // This map is now used only in the CompanyCard component
-  // Removing to avoid unused variable warnings
-  
-  // Process companies data from API to get basic info
-  const processedCompanies = companies && companies.data && companies.data.length > 0 
-    ? companies.data.map(company => {
-        // Only extract the ID for the card component
-        return {
-          id: company.id
-        };
-      })
-    : emptyCompanies;
-  
-  // Since we're removing region filtering, we'll just use all companies
-  const filteredCompanies = processedCompanies;
-  
-  // Slider settings
-  const slidesToShow = Math.min(3, filteredCompanies.length);
-  const slidesToScroll = Math.min(3, filteredCompanies.length);
-  
+
+  // Process raw companies data once it's fetched
+  useEffect(() => {
+    if (allCompaniesRaw) {
+      const newProcessedCompanies = allCompaniesRaw.map((company) => ({
+        id: company.id,
+        // Adjust 'company.attributes.Regions' if your API structure is different
+        // Ensure 'regions' is always an array
+        regions: company.Regions || [],
+      }));
+      setProcessedCompanies(newProcessedCompanies);
+    }
+  }, [allCompaniesRaw]);
+
+  // Filter companies based on selected region
+  const filteredCompanies = useMemo(() => {
+    if (!processedCompanies || processedCompanies.length === 0) {
+      return [];
+    }
+    if (selectedRegion === "All Regions") {
+      return processedCompanies;
+    }
+    return processedCompanies.filter(
+      (company) => company.regions && company.regions.includes(selectedRegion)
+    );
+  }, [processedCompanies, selectedRegion]);
+
+  const defaultRegionClass = "orange-gradient"; // For CompanyCard internal badge styling
+
+  // Dynamically adjust slider settings based on filtered companies
+  const currentSlidesToShow = Math.min(
+    3,
+    filteredCompanies.length > 0 ? filteredCompanies.length : 1
+  );
+
   const sliderSettings = {
     dots: true,
-    arrows: true,
-    infinite: filteredCompanies.length > slidesToShow,
+    arrows: false, // We'll use custom arrows
+    infinite: filteredCompanies.length > currentSlidesToShow,
     speed: 500,
-    slidesToShow: slidesToShow,
-    slidesToScroll: slidesToScroll,
+    slidesToShow: currentSlidesToShow,
+    slidesToScroll: Math.min(
+      3,
+      filteredCompanies.length > 0 ? filteredCompanies.length : 1
+    ),
     initialSlide: 0,
-    autoplay: filteredCompanies.length > 1,
+    autoplay: filteredCompanies.length > currentSlidesToShow,
     autoplaySpeed: 5000,
     pauseOnHover: true,
-    centerMode: false,
-    variableWidth: false,
-    adaptiveHeight: false,
     swipeToSlide: true,
     responsive: [
       {
-        breakpoint: 1536, // 2xl breakpoint
+        breakpoint: 1024, // lg
         settings: {
-          slidesToShow: Math.min(3, filteredCompanies.length),
-          slidesToScroll: Math.min(3, filteredCompanies.length),
-          infinite: filteredCompanies.length > 3,
-          dots: true
-        }
+          slidesToShow: Math.min(
+            2,
+            filteredCompanies.length > 0 ? filteredCompanies.length : 1
+          ),
+          slidesToScroll: Math.min(
+            2,
+            filteredCompanies.length > 0 ? filteredCompanies.length : 1
+          ),
+          infinite:
+            filteredCompanies.length >
+            Math.min(
+              2,
+              filteredCompanies.length > 0 ? filteredCompanies.length : 1
+            ),
+        },
       },
       {
-        breakpoint: 1280, // xl breakpoint
+        breakpoint: 768, // md
         settings: {
-          slidesToShow: Math.min(3, filteredCompanies.length),
-          slidesToScroll: Math.min(3, filteredCompanies.length),
-          infinite: filteredCompanies.length > 3,
-          dots: true
-        }
+          slidesToShow: Math.min(
+            2,
+            filteredCompanies.length > 0 ? filteredCompanies.length : 1
+          ),
+          slidesToScroll: Math.min(
+            2,
+            filteredCompanies.length > 0 ? filteredCompanies.length : 1
+          ),
+          infinite:
+            filteredCompanies.length >
+            Math.min(
+              2,
+              filteredCompanies.length > 0 ? filteredCompanies.length : 1
+            ),
+        },
       },
       {
-        breakpoint: 1024, // lg breakpoint
-        settings: {
-          slidesToShow: Math.min(2, filteredCompanies.length),
-          slidesToScroll: Math.min(2, filteredCompanies.length),
-          infinite: filteredCompanies.length > 2,
-          dots: true
-        }
-      },
-      {
-        breakpoint: 768, // md breakpoint
-        settings: {
-          slidesToShow: Math.min(2, filteredCompanies.length),
-          slidesToScroll: Math.min(2, filteredCompanies.length),
-          initialSlide: 0
-        }
-      },
-      {
-        breakpoint: 640, // sm breakpoint
+        breakpoint: 640, // sm
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          initialSlide: 0
-        }
-      }
-    ]
+          infinite: filteredCompanies.length > 1,
+        },
+      },
+    ],
   };
 
   return (
-    <section id="startups" className="min-h-screen orange-gradient-light py-20 relative top-[20px]">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-white to-transparent"></div>
-        <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-white to-transparent"></div>
-      </div>
-      
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-orange-600 text-shadow">SolarX Winners</h2>
-          <div className="w-24 h-1 bg-orange-500 mx-auto rounded-full"></div>
+    <section
+      id="startups"
+      className="max-w-7xl mx-auto min-w-full bg-gradient-to-b from-white via-orange-50 to-white py-16 md:py-24 relative"
+    >
+      {/* Optional: Subtle background pattern or elements if desired */}
+      {/* <div className="absolute inset-0 overflow-hidden opacity-20"> */}
+      {/* Pattern example */}
+      {/* </div> */}
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-800">
+            Meet Our <span className="text-orange-600">SolarX Winners</span>
+          </h2>
+          <div className="w-28 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 mx-auto rounded-full"></div>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto my-8">
+            Discover innovative startups driving change in the solar energy
+            sector.
+          </p>
         </div>
-        
-        {/* Removed Region Filter */}
-        
-        {/* Loading State */}
+
+        {/* Region Badge Selector */}
+        <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 mb-10 md:mb-12 px-2">
+          {REGIONS_OPTIONS.map((region) => (
+            <button
+              key={region}
+              onClick={() => setSelectedRegion(region)}
+              className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500
+                ${
+                  selectedRegion === region
+                    ? "bg-orange-600 text-white shadow-lg hover:bg-orange-700 transform scale-105"
+                    : "bg-white text-gray-700 hover:bg-orange-50 shadow-sm hover:shadow-md border border-gray-300 hover:border-orange-400"
+                }`}
+            >
+              {region}
+            </button>
+          ))}
+        </div>
+
         {loading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+          <div className="flex justify-center items-center py-20 min-h-[300px]">
+            <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
           </div>
         )}
-        
-        {/* Error State */}
+
         {error && !loading && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-8 text-center">
-            {error}
-          </div>
-        )}
-        
-        {/* Empty State */}
-        {!loading && !error && filteredCompanies.length === 0 && (
-          <div className="bg-orange-50 border border-orange-200 text-orange-700 px-4 py-8 rounded-lg mb-8 text-center">
-            <p className="text-lg font-medium mb-2">No companies found for this region</p>
-            <p>Try selecting a different region or check back later.</p>
-          </div>
-        )}
-        
-        {/* Startups Slider */}
-        {!loading && filteredCompanies.length > 0 && (
-          <div className="mt-8 sm:mt-12">
-            <div className="flex justify-between items-center mb-6 px-4 sm:px-8 md:px-12">
-              <h3 className="text-xl sm:text-2xl font-bold text-orange-600">
-                {filteredCompanies.length === 1 ? 'Featured Company' : 'Featured Companies'}
-              </h3>
-              {filteredCompanies.length > 1 && (
-                <div className="flex items-center gap-4">
-                  <div className="text-sm text-gray-600 hidden sm:block">
-                    Swipe to see more
-                  </div>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => sliderRef.current.slickPrev()}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200 transition-colors"
-                      aria-label="Previous slide"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                    <button 
-                      onClick={() => sliderRef.current.slickNext()}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200 transition-colors"
-                      aria-label="Next slide"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              )}
+          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-6 rounded-md mb-8 text-center shadow-md max-w-lg mx-auto">
+            <div className="flex justify-center mb-3">
+              <AlertTriangle className="h-8 w-8 text-red-500" />
             </div>
-            
-            <div className="slider-container">
-              {filteredCompanies.length === 1 ? (
-                // If there's only one company, render it directly without the slider
-                <div className="flex justify-center">
-                  <div className="h-full card-container max-w-md">
-                    <CompanyCard 
-                      companyId={filteredCompanies[0].id} 
-                      regionClass={defaultRegionClass}
+            <p className="font-semibold text-lg mb-1">
+              Oops! Something went wrong.
+            </p>
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && filteredCompanies.length === 0 && (
+          <div className="bg-orange-50 border-l-4 border-orange-400 text-orange-700 p-6 rounded-md mb-8 text-center shadow-md max-w-lg mx-auto min-h-[200px] flex flex-col justify-center items-center">
+            <p className="text-xl font-semibold mb-2">No Companies Found</p>
+            <p className="text-sm">
+              {selectedRegion === "All Regions"
+                ? "There are currently no companies to display."
+                : `No companies found for the "${selectedRegion}" region.`}
+            </p>
+            <p className="text-sm mt-1">
+              Try selecting a different region or check back later.
+            </p>
+          </div>
+        )}
+
+        {!loading && !error && filteredCompanies.length > 0 && (
+          <div className="mt-8">
+            {/* Slider Controls (Optional - if you want them outside the slider component) */}
+            {filteredCompanies.length > currentSlidesToShow && (
+              <div className="flex justify-end items-center mb-4 px-1 sm:px-0">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => sliderRef.current?.slickPrev()}
+                    className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white text-orange-600 hover:bg-orange-100 shadow-md hover:shadow-lg transition-all border border-gray-200"
+                    aria-label="Previous slide"
+                  >
+                    <ChevronLeftIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </button>
+                  <button
+                    onClick={() => sliderRef.current?.slickNext()}
+                    className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white text-orange-600 hover:bg-orange-100 shadow-md hover:shadow-lg transition-all border border-gray-200"
+                    aria-label="Next slide"
+                  >
+                    <ChevronRightIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="slider-container -mx-2 sm:-mx-3">
+              {" "}
+              {/* Negative margin to counteract padding in slides */}
+              <Slider
+                ref={sliderRef}
+                {...sliderSettings}
+                className="company-slider"
+              >
+                {filteredCompanies.map((company) => (
+                  <div
+                    key={company.id}
+                    className="px-2 sm:px-3 h-full card-container"
+                  >
+                    {" "}
+                    {/* Padding for spacing between cards */}
+                    <CompanyCard
+                      companyId={company.id}
+                      regionClass={defaultRegionClass} // Pass this for internal CompanyCard styling
                     />
                   </div>
-                </div>
-              ) : (
-                // Otherwise use the slider for multiple companies
-                <Slider ref={sliderRef} className="company-slider" {...sliderSettings}>
-                  {filteredCompanies.map(company => (
-                    <div key={company.id} className="h-full card-container">
-                      <CompanyCard 
-                        companyId={company.id} 
-                        regionClass={defaultRegionClass}
-                      />
-                    </div>
-                  ))}
-                </Slider>
-              )}
+                ))}
+              </Slider>
             </div>
           </div>
         )}
-        
-        {/* Removed View All Button */}
       </div>
     </section>
   );

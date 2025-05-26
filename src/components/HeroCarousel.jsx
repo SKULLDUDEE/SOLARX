@@ -1,199 +1,340 @@
-import { useState, useEffect, useRef } from 'react';
-import { BsChevronRight } from 'react-icons/bs';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 
+// --- Slide Data (can be fetched from CMS) ---
+const slidesData = [
+  {
+    id: "s1",
+    title: "Powering the Future with Solar Innovation",
+    description:
+      "Discover 50+ solar startups across Africa, Asia-Pacific, LAC, and MENA regions transforming energy access with innovative solutions.",
+    layout: "center",
+    bgClass: "bg-gradient-to-br from-orange-500 to-amber-600",
+    imgUrl:
+      "https://images.unsplash.com/photo-1509391366360-2e959784a276?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80&h=1080",
+    buttonTextColor: "text-orange-600",
+  },
+  {
+    id: "s2",
+    title: "Sustainable Energy Solutions",
+    description:
+      "Supporting innovative startups that are creating affordable and accessible solar technologies for communities worldwide.",
+    layout: "left",
+    bgClass: "bg-gradient-to-br from-green-600 to-emerald-700",
+    imgUrl:
+      "https://images.unsplash.com/photo-1497440001374-f26997328c1b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80&h=1080",
+    buttonTextColor: "text-green-600",
+  },
+  {
+    id: "s3",
+    title: "Empowering Communities",
+    description:
+      "Building a network of solar entrepreneurs who are making a positive impact on local economies and the environment.",
+    layout: "center",
+    bgClass: "bg-gradient-to-br from-blue-600 to-indigo-700",
+    imgUrl:
+      "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80&h=1080",
+    buttonTextColor: "text-blue-600",
+  },
+  {
+    id: "s4",
+    title: "Driving Innovation in Solar Technology",
+    description:
+      "Accelerating the development and deployment of cutting-edge solar solutions to address global energy challenges.",
+    layout: "right",
+    bgClass: "bg-gradient-to-br from-purple-600 to-violet-700",
+    imgUrl:
+      "https://images.unsplash.com/photo-1690191795384-0e4997a886a4?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&h=1080",
+    buttonTextColor: "text-purple-600",
+  },
+  {
+    id: "s5",
+    title: "Creating a Sustainable Future",
+    description:
+      "Join our mission to build a cleaner, more sustainable world through renewable energy innovation and entrepreneurship.",
+    layout: "bottom",
+    bgClass: "bg-gradient-to-br from-teal-600 to-cyan-700",
+    imgUrl:
+      "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80&h=1080",
+    buttonTextColor: "text-teal-600",
+  },
+];
+
+// --- Navigation Components ---
+const PrevButton = ({ enabled, onClick }) => (
+  <button
+    className="absolute left-4 md:left-6 top-1/2 transform -translate-y-1/2 z-30 text-white/70 hover:text-white focus:outline-none transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 md:block disabled:opacity-30 disabled:cursor-not-allowed"
+    onClick={onClick}
+    disabled={!enabled}
+    aria-label="Previous slide"
+  >
+    <BsChevronLeft
+      className="h-10 w-10 md:h-14 md:w-14"
+      style={{ strokeWidth: "0.5" }}
+    />
+  </button>
+);
+
+const NextButton = ({ enabled, onClick }) => (
+  <button
+    className="absolute right-4 md:right-6 top-1/2 transform -translate-y-1/2 z-30 text-white/70 hover:text-white focus:outline-none transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 md:block disabled:opacity-30 disabled:cursor-not-allowed"
+    onClick={onClick}
+    disabled={!enabled}
+    aria-label="Next slide"
+  >
+    <BsChevronRight
+      className="h-10 w-10 md:h-14 md:w-14"
+      style={{ strokeWidth: "0.5" }}
+    />
+  </button>
+);
+
+const DotButton = ({ selected, onClick, index }) => (
+  <button
+    className={`h-1 rounded-sm transition-all duration-500 ease-out focus:outline-none
+            ${
+              selected
+                ? "bg-white w-8 md:w-10 scale-x-110"
+                : "bg-white/50 w-6 md:w-8 hover:bg-white/75"
+            }`}
+    type="button"
+    onClick={onClick}
+    aria-label={`Go to slide ${index + 1}`}
+    aria-current={selected ? "true" : "false"}
+  />
+);
+
+// --- Main Carousel Component ---
 export default function HeroCarousel() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
-  const [isArrowVisible, setIsArrowVisible] = useState(true);
+  const NAVBAR_HEIGHT = "4.5rem"; // Example: "4rem", "64px", etc.
+  const autoplayOptions = {
+    delay: 7000,
+    stopOnInteraction: false,
+    stopOnMouseEnter: true,
+  };
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true, align: "start" },
+    [Autoplay(autoplayOptions)]
+  );
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [scrollSnaps, setScrollSnaps] = useState([]);
+  const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
+  const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
+  const interactionTimeoutRef = useRef(null);
 
-  const slides = [
-    {
-      title: 'Powering the Future with Solar Innovation',
-      description:
-        'Discover 50+ solar startups across Africa, Asia-Pacific, LAC, and MENA regions transforming energy access with innovative solutions.',
-      bgClass: 'from-orange-500 to-amber-600',
-      imgUrl: '/api/placeholder/1350/800',
-    },
-    {
-      title: 'Sustainable Energy Solutions',
-      description:
-        'Supporting innovative startups that are creating affordable and accessible solar technologies for communities worldwide.',
-      bgClass: 'from-green-600 to-emerald-700',
-      imgUrl: '/api/placeholder/1350/800',
-    },
-    {
-      title: 'Empowering Communities',
-      description:
-        'Building a network of solar entrepreneurs who are making a positive impact on local economies and the environment.',
-      bgClass: 'from-blue-600 to-indigo-700',
-      imgUrl: '/api/placeholder/1350/800',
-    },
-    {
-      title: 'Driving Innovation in Solar Technology',
-      description:
-        'Accelerating the development and deployment of cutting-edge solar solutions to address global energy challenges.',
-      bgClass: 'from-purple-600 to-violet-700',
-      imgUrl: '/api/placeholder/1350/800',
-    },
-    {
-      title: 'Creating a Sustainable Future',
-      description:
-        'Join our mission to build a cleaner, more sustainable world through renewable energy innovation and entrepreneurship.',
-      bgClass: 'from-teal-600 to-cyan-700',
-      imgUrl: '/api/placeholder/1350/800',
-    },
-  ];
+  const scrollPrev = useCallback(
+    () => emblaApi && emblaApi.scrollPrev(),
+    [emblaApi]
+  );
+  const scrollNext = useCallback(
+    () => emblaApi && emblaApi.scrollNext(),
+    [emblaApi]
+  );
+  const scrollTo = useCallback(
+    (index) => emblaApi && emblaApi.scrollTo(index),
+    [emblaApi]
+  );
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+    setPrevBtnEnabled(emblaApi.canScrollPrev());
+    setNextBtnEnabled(emblaApi.canScrollNext());
+  }, [emblaApi]);
+
+  const onInteraction = useCallback(() => {
+    if (!emblaApi || !emblaApi.plugins()?.autoplay) return;
+    const autoplay = emblaApi.plugins().autoplay;
+    if (!autoplay) return;
+
+    autoplay.stop();
+    if (interactionTimeoutRef.current) {
+      clearTimeout(interactionTimeoutRef.current);
+    }
+    interactionTimeoutRef.current = setTimeout(() => {
+      autoplay.play();
+    }, 5000);
+  }, [emblaApi]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % slides.length);
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [slides.length]);
+    if (!emblaApi) return;
+    onSelect();
+    setScrollSnaps(emblaApi.scrollSnapList());
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+    emblaApi.on("pointerDown", onInteraction);
+    emblaApi.on("keyDown", onInteraction);
+
+    return () => {
+      if (interactionTimeoutRef.current) {
+        clearTimeout(interactionTimeoutRef.current);
+      }
+    };
+  }, [emblaApi, onSelect, onInteraction]);
 
   useEffect(() => {
-    const blink = setInterval(() => {
-      setIsArrowVisible((prev) => !prev);
-    }, 600);
-    return () => clearInterval(blink);
+    // Simple image preloading for first few slides
+    slidesData.slice(0, 2).forEach((slide) => {
+      const img = new Image();
+      img.src = slide.imgUrl;
+    });
   }, []);
 
-  const goToSlide = (index) => {
-    setCurrentIndex(index);
+  const getLayoutClasses = (layout) => {
+    switch (layout) {
+      case "left":
+        return "items-start text-left";
+      case "right":
+        return "items-end text-right";
+      case "bottom":
+        return "items-center text-center justify-end pb-16 sm:pb-20 md:pb-24";
+      case "top":
+        return "items-center text-center justify-start pt-16 sm:pt-20 md:pt-24";
+      case "center":
+      default:
+        return "items-center text-center justify-center";
+    }
   };
 
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % slides.length);
-  };
-
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
-  };
-
-  const handleTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 100) goToNext();
-    if (touchStart - touchEnd < -100) goToPrevious();
+  const getContentTransitionClasses = (layout, isActive) => {
+    const baseTransition = "transition-all duration-700 ease-out";
+    if (!isActive) {
+      switch (layout) {
+        case "left":
+          return `${baseTransition} opacity-0 -translate-x-12`;
+        case "right":
+          return `${baseTransition} opacity-0 translate-x-12`;
+        case "bottom":
+          return `${baseTransition} opacity-0 translate-y-12`;
+        case "top":
+          return `${baseTransition} opacity-0 -translate-y-12`;
+        case "center":
+        default:
+          return `${baseTransition} opacity-0 scale-90`;
+      }
+    }
+    return `${baseTransition} opacity-100 translate-x-0 translate-y-0 scale-100 delay-300`; // Delay for active content reveal
   };
 
   return (
     <section
       id="home"
-      className="relative h-[600px] overflow-hidden mt-[63px] sm:mt-6 md:mt-0 md:top-[73px]"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      className="relative w-full h-screen min-h-[650px] max-h-[1080px] overflow-hidden group/carousel"
+      style={{
+        // Calculate height to be viewport height MINUS navbar height
+        height: `calc(100vh - ${NAVBAR_HEIGHT})`,
+        // Add padding-top to push content below the fixed navbar
+        paddingTop: NAVBAR_HEIGHT,
+        // Set min/max heights for better control on different screen sizes
+        minHeight: "100px", // Adjust as needed
+        maxHeight: `calc(90vh - ${NAVBAR_HEIGHT})`, // Ensure it doesn't exceed the calculated space
+      }}
+      aria-roledescription="carousel"
+      aria-label="Hero Highlights"
+      onMouseEnter={() => emblaApi?.plugins?.()?.autoplay?.stop()}
+      onMouseLeave={() => emblaApi?.plugins?.()?.autoplay?.play()}
     >
-      {/* Slides */}
-      {slides.map((slide, index) => (
-        <div
-          key={`slide-${index}`}
-          className={`absolute inset-0 w-full h-full transition-opacity duration-[1500ms] ease-in-out ${
-            index === currentIndex
-              ? 'opacity-100 z-10 pointer-events-auto'
-              : 'opacity-0 z-0 pointer-events-none'
-          }`}
-        >
-          <div className="absolute inset-0">
-            <div className={`absolute inset-0 bg-gradient-to-br ${slide.bgClass} opacity-80 z-10`} />
-            <img
-              src={slide.imgUrl}
-              alt={`Slide ${index + 1}`}
-              className="absolute inset-0 w-full h-full object-cover object-center z-0"
-            />
-            <div className="absolute inset-0 bg-black/30 z-20" />
-          </div>
-
-          {/* Decorative Circles */}
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full z-30" />
-          <div className="absolute top-40 -left-20 w-80 h-80 bg-white/10 rounded-full z-30" />
-          <div className="absolute -bottom-40 right-20 w-96 h-96 bg-white/10 rounded-full z-30" />
-        </div>
-      ))}
-
-      {/* Arrow */}
-      <div className="absolute top-0 right-0 bottom-0 left-0 hidden md:block z-[300]">
-        <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
-          <button
-            onClick={goToNext}
-            className="bg-transparent border-0 cursor-pointer p-4"
-            aria-label="Next slide"
-          >
-            <BsChevronRight
-              className={`text-white text-6xl ${isArrowVisible ? 'opacity-100' : 'opacity-30'}`}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="relative z-40 h-full flex items-center justify-center pt-24 pb-16">
-        <div className="container mx-auto px-6">
-          {slides.map((slide, index) => (
+      {/* Embla Viewport */}
+      <div
+        className="embla h-full overflow-hidden"
+        ref={emblaRef}
+        style={{ height: "100%" }}
+      >
+        {" "}
+        {/* Added overflow-hidden here */}
+        {/* Embla Container */}
+        <div className="embla__container flex h-full">
+          {slidesData.map((slide, index) => (
+            // Embla Slide
             <div
-              key={`content-${index}`}
-              className={`text-center text-white transition-all duration-[1500ms] ease-in-out transform ${
-                index === currentIndex
-                  ? 'opacity-100 translate-y-0 scale-100'
-                  : 'opacity-0 translate-y-8 scale-95 absolute'
-              }`}
-              style={{ display: index === currentIndex ? 'block' : 'none' }}
+              className={`embla__slide relative h-full min-w-0 ${slide.bgClass}`} // Applied bgClass here for fallback
+              style={{ flex: "0 0 100%" }} // Explicit flex-basis
+              key={slide.id}
             >
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">{slide.title}</h1>
-              <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto text-white/90">
-                {slide.description}
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-                <a
-                  href="#startups"
-                  className={`bg-white ${
-                    index === 0
-                      ? 'text-orange-600'
-                      : index === 1
-                      ? 'text-green-600'
-                      : index === 2
-                      ? 'text-blue-600'
-                      : index === 3
-                      ? 'text-purple-600'
-                      : 'text-teal-600'
-                  } hover:bg-opacity-90 font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300`}
+              {/* Background Image & Dark Overlay */}
+              <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 bg-black/50 z-10"></div>
+                <img
+                  src={slide.imgUrl}
+                  alt={slide.title || "Hero background image"}
+                  className="absolute inset-0 w-full h-full object-cover object-center"
+                  loading={index < 2 ? "eager" : "lazy"}
+                />
+              </div>
+
+              {/* Slide Content Wrapper */}
+              <div
+                className={`relative z-20 h-full flex ${getLayoutClasses(
+                  slide.layout
+                )} p-6 md:p-10 lg:p-12`}
+              >
+                {/* Animated Content Block */}
+                <div
+                  className={`w-full max-w-3xl text-white ${getContentTransitionClasses(
+                    slide.layout,
+                    index === selectedIndex
+                  )}`}
                 >
-                  Explore Startups
-                </a>
-                <a
-                  href="/apply"
-                  className="border-2 border-white text-white hover:bg-white/20 font-bold py-3 px-8 rounded-full transition-all duration-300"
-                >
-                  Apply Now
-                </a>
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 md:mb-6 text-shadow">
+                    {slide.title}
+                  </h1>
+                  <p
+                    className={`text-lg md:text-xl mb-6 md:mb-8 text-white/90 leading-relaxed max-w-2xl 
+                                        ${
+                                          slide.layout === "left" ||
+                                          slide.layout === "right"
+                                            ? ""
+                                            : "mx-auto"
+                                        }`}
+                  >
+                    {slide.description}
+                  </p>
+                  <div
+                    className={`flex flex-col sm:flex-row gap-4 
+                                        ${
+                                          slide.layout === "left"
+                                            ? "justify-start"
+                                            : slide.layout === "right"
+                                            ? "justify-end"
+                                            : "justify-center"
+                                        }`}
+                  >
+                    <a
+                      href="#startups" // Replace with actual link or React Router <Link>
+                      className={`bg-white ${slide.buttonTextColor} hover:bg-opacity-90 font-semibold py-3 px-7 rounded-full shadow-xl hover:scale-105 transition-all duration-300 ease-in-out text-base md:text-lg`}
+                    >
+                      Explore Startups
+                    </a>
+                    <a
+                      href="/apply" // Replace with actual link or React Router <Link>
+                      className="border-2 border-white text-white hover:bg-white/10 font-semibold py-3 px-7 rounded-full shadow-lg hover:scale-105 transition-all duration-300 ease-in-out text-base md:text-lg"
+                    >
+                      Apply Now
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="absolute bottom-8 left-0 right-0 z-[1000] pointer-events-auto">
-        <div className="flex justify-center space-x-4 px-4 py-2">
-          {slides.map((_, index) => (
-            <button
-              key={`indicator-${index}`}
-              onClick={() => goToSlide(index)}
-              className={`w-10 h-2 rounded-full transition-all duration-300 ${
-                index === currentIndex ? 'bg-white scale-x-110' : 'bg-white/40'
-              } hover:bg-white hover:scale-x-110 cursor-pointer`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
+      {/* Navigation Buttons */}
+      <PrevButton onClick={scrollPrev} enabled={prevBtnEnabled} />
+      <NextButton onClick={scrollNext} enabled={nextBtnEnabled} />
+
+      {/* Dot Indicators */}
+      <div className="absolute bottom-6 md:bottom-8 left-0 right-0 flex justify-center space-x-2 md:space-x-2.5 z-30">
+        {scrollSnaps.map((_, index) => (
+          <DotButton
+            key={index}
+            selected={index === selectedIndex}
+            onClick={() => scrollTo(index)}
+            index={index}
+          />
+        ))}
       </div>
     </section>
   );

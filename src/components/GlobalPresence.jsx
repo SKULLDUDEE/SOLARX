@@ -314,22 +314,14 @@ const GlobalPresence = ({ companyId }) => {
       }`}
     >
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2
-            className={`text-3xl md:text-4xl font-bold mb-4 ${
-              darkMode ? "text-white" : "text-gray-800"
-            }`}
-          >
-            Our Global Footprint
-          </h2>
-          <p
-            className={`text-lg max-w-3xl mx-auto ${
-              darkMode ? "text-gray-300" : "text-gray-600"
-            }`}
-          >
-            Mapping our journey of impact, innovation, and collaboration across
-            the globe.
-          </p>
+        <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
+          <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+          <h1 className="text-3xl md:text-5xl font-bold mb-1">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+             Our Global Footprint
+            </span>
+          </h1>
+          <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
         </div>
 
         {loading && (

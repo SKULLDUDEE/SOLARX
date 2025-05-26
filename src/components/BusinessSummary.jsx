@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 export default function BusinessSummary({ companyId }) {
   const [businessData, setBusinessData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const parseRichText = (content) => {
-    if (!content || !Array.isArray(content)) return '';
+    if (!content || !Array.isArray(content)) return "";
     return content
-      .map(paragraph =>
-        paragraph.children?.map(child => child.text || '').join('') || ''
+      .map(
+        (paragraph) =>
+          paragraph.children?.map((child) => child.text || "").join("") || ""
       )
       .filter(Boolean)
-      .join('\n');
+      .join("\n");
   };
 
   useEffect(() => {
@@ -29,29 +30,31 @@ export default function BusinessSummary({ companyId }) {
           const bs = startup.Business_Summary;
 
           const summaryText = parseRichText(bs?.Brief_Summary || []);
-          const features = (bs?.USP || []).map(usp => ({
+          const features = (bs?.USP || []).map((usp) => ({
             title: usp.USP_Title,
-            description: parseRichText(usp.USP_Description)
+            description: parseRichText(usp.USP_Description),
           }));
 
           setBusinessData({
-            companyName: startup.Name || 'Company',
-            summary: summaryText || 'No summary provided.',
-            features: features
+            companyName: startup.Name || "Company",
+            summary: summaryText || "No summary provided.",
+            features: features,
           });
         } else {
           setBusinessData({
-            companyName: 'Company',
-            summary: 'No business summaries found. Please add business summary data in the Strapi admin panel.',
-            features: []
+            companyName: "Company",
+            summary:
+              "No business summaries found. Please add business summary data in the Strapi admin panel.",
+            features: [],
           });
         }
       } catch (error) {
         console.error("Error fetching business summary:", error);
         setBusinessData({
-          companyName: 'Error Loading Data',
-          summary: 'There was an error loading the business summary. Please check your API connection and try again.',
-          features: []
+          companyName: "Error Loading Data",
+          summary:
+            "There was an error loading the business summary. Please check your API connection and try again.",
+          features: [],
         });
       } finally {
         setLoading(false);
@@ -62,11 +65,16 @@ export default function BusinessSummary({ companyId }) {
   }, [companyId]);
 
   return (
-    <div className="max-w-7xl mx-auto p-1">
-      <div className="flex items-center mb-8">
-        <div className="w-24 h-1 bg-orange-400 mr-4"></div>
-        <h1 className="text-4xl font-bold text-gray-900">Business Summary</h1>
-      </div>
+    <div className="max-w-7xl mx-auto p-6 lg:p-0 my-20">
+          <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
+            <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+            <h1 className="text-3xl md:text-5xl font-bold mb-1">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+                Business Summary
+              </span>
+            </h1>
+            <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+          </div>
 
       {loading && (
         <div className="flex justify-center items-center py-20">
@@ -76,21 +84,35 @@ export default function BusinessSummary({ companyId }) {
 
       {!loading && businessData && (
         <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
-          <p className="text-lg text-gray-700 mb-8 whitespace-pre-line">{businessData.summary}</p>
+          <p className="text-lg text-gray-700 mb-8 whitespace-pre-line">
+            {businessData.summary}
+          </p>
 
           {businessData.features.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {businessData.features.map((feature, index) => (
-                <div key={index} className="border border-gray-100 rounded-lg p-6">
-                  <h2 className="text-2xl font-semibold text-orange-500 mb-4">{feature.title}</h2>
-                  <p className="text-gray-700 whitespace-pre-line">{feature.description}</p>
+                <div
+                  key={index}
+                  className="border border-gray-100 rounded-lg p-6"
+                >
+                  <h2 className="text-2xl font-semibold text-orange-500 mb-4">
+                    {feature.title}
+                  </h2>
+                  <p className="text-gray-700 whitespace-pre-line">
+                    {feature.description}
+                  </p>
                 </div>
               ))}
             </div>
           ) : (
             <div className="bg-orange-50 border border-orange-100 rounded-lg p-6 text-center">
-              <h3 className="text-xl font-medium text-orange-700 mb-2">No Business Features Available</h3>
-              <p className="text-orange-600">Please add business features in the Strapi admin panel under Business Summary.</p>
+              <h3 className="text-xl font-medium text-orange-700 mb-2">
+                No Business Features Available
+              </h3>
+              <p className="text-orange-600">
+                Please add business features in the Strapi admin panel under
+                Business Summary.
+              </p>
             </div>
           )}
         </div>
@@ -99,9 +121,12 @@ export default function BusinessSummary({ companyId }) {
       {!loading && !businessData && (
         <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
           <div className="bg-orange-50 border border-orange-100 rounded-lg p-8 text-center">
-            <h3 className="text-xl font-medium text-orange-700 mb-4">No Business Summary Available</h3>
+            <h3 className="text-xl font-medium text-orange-700 mb-4">
+              No Business Summary Available
+            </h3>
             <p className="text-orange-600 mb-4">
-              Please add business summary data in the Strapi admin panel for this company.
+              Please add business summary data in the Strapi admin panel for
+              this company.
             </p>
             <div className="flex justify-center">
               <a

@@ -12,6 +12,10 @@ export default function MentorCarousel({ darkMode = false, companyId }) {
         setLoading(true);
         // console.log("MentorCarousel: Fetching mentors data...");
         const response = await fetchMentors(companyId);
+        console.log(
+          "MentorCarousel: API response received for mentors:",
+          response.data
+        );
 
         // console.log("MentorCarousel: Raw API response:", response);
 
@@ -155,13 +159,12 @@ export default function MentorCarousel({ darkMode = false, companyId }) {
     >
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2
-            className={`text-3xl md:text-4xl font-bold mb-4 animate-fade-in ${
-              darkMode ? "text-white text-gradient" : "text-gray-900"
-            }`}
-          >
-            Meet Our Founders
-          </h2>
+          <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+              Meet our Founders
+            </span>
+          </h1>
+          <div className="w-24 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 mx-auto rounded-full mb-6"></div>
         </div>
 
         {loading ? (

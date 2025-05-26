@@ -1,7 +1,18 @@
-import { useState, useEffect } from 'react';
-import { Building, Calendar, MapPin, DollarSign, Users, Shield, Target, ArrowLeft, Globe } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getLocationFromLatLong } from "../utils/strapiHelper";
+import {
+  Building,
+  Calendar,
+  MapPin,
+  DollarSign,
+  Users,
+  Shield,
+  Target,
+  ArrowLeft,
+  Globe,
+} from "lucide-react";
 // import { fetchCompanyWithRelationships } from '../services/api';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams } from "react-router-dom";
 
 export default function CompanyInformation({ companyId }) {
   // If companyId is not passed as prop, try to get it from URL params
@@ -13,23 +24,25 @@ export default function CompanyInformation({ companyId }) {
 
   // Function to manually parse rich text content
   const parseRichText = (content) => {
-    if (!content) return '';
-    
+    if (!content) return "";
+
     // If it's a string, return it directly
-    if (typeof content === 'string') return content;
-    
+    if (typeof content === "string") return content;
+
     // If it's an array (Strapi rich text format)
     if (Array.isArray(content)) {
-      return content.map(block => {
-        if (block.children && Array.isArray(block.children)) {
-          return block.children.map(child => child.text || '').join('');
-        }
-        return '';
-      }).join('\n');
+      return content
+        .map((block) => {
+          if (block.children && Array.isArray(block.children)) {
+            return block.children.map((child) => child.text || "").join("");
+          }
+          return "";
+        })
+        .join("\n");
     }
-    
+
     // If we can't parse it, return empty string
-    return '';
+    return "";
   };
 
   useEffect(() => {
@@ -37,47 +50,51 @@ export default function CompanyInformation({ companyId }) {
       try {
         setLoading(true);
         // console.log('CompanyInformation - Fetching company details for ID:', id);
-        
+
         // Get all companies first
         const response = await fetch(`http://localhost:1337/api/startups`);
         const result = await response.json();
-        
+
         // console.log("CompanyInformation - All companies response:", result);
-        
+
         // Find the company with the matching ID
-        const companyData = result.data.find(c => c.id.toString() === id.toString());
-        
+        const companyData = result.data.find(
+          (c) => c.id.toString() === id.toString()
+        );
+
         if (companyData) {
           // console.log("CompanyInformation - Found company:", companyData);
-          
+
           // Parse the introduction manually
           const parsedIntro = parseRichText(companyData.introduction);
           // console.log("CompanyInformation - Parsed introduction:", parsedIntro);
-          
+
           // Create a clean company object
           const cleanCompany = {
             id: companyData.id,
-            Name: companyData.Name || 'Unnamed Company',
-            introduction: companyData.Description[0].children[0].text || '',
+            Name: companyData.Name || "Unnamed Company",
+            introduction: companyData.Description[0].children[0].text || "",
             // parsedIntroduction: parsedIntro,
-            Website: companyData.Website_URL || '',
-            ContactEmail: companyData.Contact_Email || '',
-            FoundingYear: companyData.Founding_Year || '',
-            Headquarters: companyData.Location || '',
-            TeamSize: companyData.Team_Size || '',
+            Website: companyData.Website_URL || "",
+            ContactEmail: companyData.Contact_Email || "",
+            FoundingYear: companyData.Founding_Year || "",
+            Headquarters: await getLocationFromLatLong(companyData.HQ_Location.lat, companyData.HQ_Location.lng) || "Location not specified",
+            TeamSize: companyData.Team_Size || "",
             sdgs: companyData.SDG,
-            // Add any other fields needed
           };
-          
+
           // console.log('CompanyInformation - Clean company data:', cleanCompany);
           setCompany(cleanCompany);
         } else {
-          console.warn('CompanyInformation - Company not found with ID:', id);
-          setError('Company data not found');
+          console.warn("CompanyInformation - Company not found with ID:", id);
+          setError("Company data not found");
         }
       } catch (err) {
-        console.error('CompanyInformation - Error fetching company details:', err);
-        setError('Failed to load company details. Please try again later.');
+        console.error(
+          "CompanyInformation - Error fetching company details:",
+          err
+        );
+        setError("Failed to load company details. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -88,9 +105,7 @@ export default function CompanyInformation({ companyId }) {
     }
   }, [id]);
   return (
-    <div className="p-6 md:p-12 lg:p-20 font-sans max-w-7xl mx-auto">
-
-     
+    <div className="p-6 font-sans max-w-7xl mx-auto my-20">
       {loading && (
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
@@ -104,20 +119,18 @@ export default function CompanyInformation({ companyId }) {
       )}
 
       {!loading && company && (
-        <>
-          <div className="flex items-center mb-8">
-            <div className="w-24 h-1 bg-orange-400 mr-4"></div>
-            <h1 className="text-4xl font-bold text-gray-900">{company.Name || 'Company Information'}</h1>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
+            <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+            <h1 className="text-3xl md:text-5xl font-bold mb-1">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+                Company Details
+              </span>
+            </h1>
+            <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center mb-6">
-              <div className="bg-orange-500 rounded-lg p-2 mr-3">
-                <Building className="text-white" size={24} />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800">Startup Details</h2>
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Founded */}
               <div className="border border-gray-200 rounded-lg p-4 flex items-start">
@@ -126,7 +139,9 @@ export default function CompanyInformation({ companyId }) {
                 </div>
                 <div>
                   <p className="text-gray-500 text-sm mb-1">Founded</p>
-                  <p className="text-gray-800 text-xl font-medium">{company.FoundingYear || 'Not specified'}</p>
+                  <p className="text-gray-800 text-xl font-medium">
+                    {company.FoundingYear || "Not specified"}
+                  </p>
                 </div>
               </div>
 
@@ -138,9 +153,9 @@ export default function CompanyInformation({ companyId }) {
                 <div>
                   <p className="text-gray-500 text-sm mb-1">SDG Alignment</p>
                   <p className="text-gray-800 text-xl font-medium">
-                    {company.sdgs && company.sdgs.length > 0 
-                      ? company.sdgs.map(sdg => sdg).join(', ') 
-                      : 'Not specified'}
+                    {company.sdgs && company.sdgs.length > 0
+                      ? company.sdgs.map((sdg) => sdg).join(", ")
+                      : "Not specified"}
                   </p>
                 </div>
               </div>
@@ -152,7 +167,9 @@ export default function CompanyInformation({ companyId }) {
                 </div>
                 <div>
                   <p className="text-gray-500 text-sm mb-1">Location</p>
-                  <p className="text-gray-800 text-xl font-medium">{company.Headquarters || 'Not specified'}</p>
+                  <p className="text-gray-800 text-xl font-medium">
+                    {company.Headquarters || "Not specified"}
+                  </p>
                 </div>
               </div>
 
@@ -164,7 +181,11 @@ export default function CompanyInformation({ companyId }) {
                 <div>
                   <p className="text-gray-500 text-sm mb-1">Team Size</p>
                   <p className="text-gray-800 text-xl font-medium">
-                    {company.TeamSize ? `${company.TeamSize} employees` : 'Not specified'}
+                    {company.TeamSize
+                      ? company.TeamSize == 1
+                        ? `${company.TeamSize} employee`
+                        : `${company.TeamSize} employees`
+                      : "Not specified"}
                   </p>
                 </div>
               </div>
@@ -178,15 +199,17 @@ export default function CompanyInformation({ companyId }) {
                   <p className="text-gray-500 text-sm mb-1">Website</p>
                   <p className="text-gray-800 text-xl font-medium">
                     {company.Website ? (
-                      <a 
-                        href={company.Website} 
-                        target="_blank" 
+                      <a
+                        href={company.Website}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-orange-600 hover:text-orange-700 hover:underline"
                       >
                         {company.Website}
                       </a>
-                    ) : 'Not specified'}
+                    ) : (
+                      "Not specified"
+                    )}
                   </p>
                 </div>
               </div>
@@ -200,41 +223,51 @@ export default function CompanyInformation({ companyId }) {
                   <p className="text-gray-500 text-sm mb-1">Contact</p>
                   <p className="text-gray-800 text-xl font-medium">
                     {company.ContactEmail ? (
-                      <a 
-                        href={`mailto:${company.ContactEmail}`} 
+                      <a
+                        href={`mailto:${company.ContactEmail}`}
                         className="text-orange-600 hover:text-orange-700 hover:underline"
                       >
                         {company.ContactEmail}
                       </a>
-                    ) : 'Not specified'}
+                    ) : (
+                      "Not specified"
+                    )}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Company Description section removed as requested */}
-            
+
             {/* Company Milestones */}
-            {company.milestones && company.milestones.data && company.milestones.data.length > 0 && (
-              <div className="mt-8 border border-gray-200 rounded-lg p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Key Milestones</h3>
-                <div className="space-y-4">
-                  {company.milestones.data.map((milestone, index) => (
-                    <div key={index} className="flex items-start">
-                      <div className="bg-orange-100 text-orange-600 rounded-full p-2 mr-4 mt-1">
-                        <Calendar size={16} />
+            {company.milestones &&
+              company.milestones.data &&
+              company.milestones.data.length > 0 && (
+                <div className="mt-8 border border-gray-200 rounded-lg p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">
+                    Key Milestones
+                  </h3>
+                  <div className="space-y-4">
+                    {company.milestones.data.map((milestone, index) => (
+                      <div key={index} className="flex items-start">
+                        <div className="bg-orange-100 text-orange-600 rounded-full p-2 mr-4 mt-1">
+                          <Calendar size={16} />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {milestone.attributes.date}
+                          </p>
+                          <p className="text-gray-700">
+                            {milestone.attributes.description}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{milestone.attributes.date}</p>
-                        <p className="text-gray-700">{milestone.attributes.description}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
