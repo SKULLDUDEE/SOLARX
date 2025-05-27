@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { ExternalLink } from "lucide-react";
 
 export default function MediaCoverageSection() {
   const [mediaCoverage, setMediaCoverage] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const truncate = (string, length, end = "...") => {
+    return string.length < length ? string : string.substring(0, length) + end;
+  };
 
   useEffect(() => {
     const fetchMediaData = async () => {
@@ -24,7 +29,9 @@ export default function MediaCoverageSection() {
             coverage.push({
               id: media.id,
               source: media.Source || "Media",
+              publisher: media.Source || "Unknown",
               title: media.Headline || "Untitled",
+              headline: media.Headline || "Untitled",
               date: media.Date || "",
               link: media.URL || "",
               startupName: name,
@@ -71,59 +78,36 @@ export default function MediaCoverageSection() {
       )}
 
       {!loading && !error && (
-        <div className="grid md:grid-cols-2 gap-8 animate-slide-in-left max-w-7xl mx-auto px-4">
+        <div className="grid md:grid-cols-3 gap-8 animate-slide-in-left max-w-7xl mx-auto px-4">
           {mediaCoverage.length > 0 ? (
             mediaCoverage.map((item, index) => (
-              <div
-                key={item.id}
-                className="flex items-start space-x-4 group hover:bg-orange-50 hover:shadow-lg transition-all duration-300 p-6 rounded-xl border border-transparent hover:border-orange-200"
+              <a
+                href={item.link}
+                id={item.id}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex justify-between flex-col bg-white rounded-xl shadow-lg hover:hover:shadow-[0px_0px_20px_5px_rgba(234,88,12,1)] transition-all duration-300 ease-in-out transform hover:-translate-y-1 overflow-hidden border border-gray-200 hover:border-orange-400 group"
               >
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-semibold shadow-md">
-                  {item.initials}
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-orange-600 mb-1 font-medium flex items-center">
-                    {item.source}
-                    {item.date && (
-                      <>
-                        <span className="mx-2 w-1 h-1 bg-orange-400 rounded-full inline-block"></span>
-                        {item.date}
-                      </>
-                    )}
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-orange-700">
-                    {item.title}
+                <div className="p-5 sm:p-6 flex flex-col justify-between">
+                  <p className="text-xs text-gray-500 mb-2">
+                    <span className="font-semibold text-gray-700">
+                      {item.publisher}
+                    </span>
+                    <span className="mx-1">|</span>
+                    <span>{item.date}</span>
+                  </p>
+
+                  <h3 className="text-lg sm:text-2xl font-semibold text-orange-600 mt-2 leading-tight group-hover:text-orange-600 transition-colors">
+                    {item.headline}
                   </h3>
-                  {item.startupName && (
-                    <p className="text-gray-500 text-sm mb-2 italic">
-                      By {item.startupName}
-                    </p>
-                  )}
-                  {item.link && (
-                    <a
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-orange-600 hover:text-orange-700 font-medium inline-flex items-center hover:underline"
-                    >
-                      Read Article
-                      <svg
-                        className="ml-1 w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </a>
-                  )}
                 </div>
-              </div>
+                <div className="bg-gray-50 px-5 py-3 sm:px-6 sm:py-4 border-t border-gray-100 text-right">
+                  <span className="text-xs sm:text-sm font-medium text-orange-500 group-hover:text-orange-700 transition-colors inline-flex items-center">
+                    Read Full Article
+                    <ExternalLink size={14} className="ml-1.5" />
+                  </span>
+                </div>
+              </a>
             ))
           ) : (
             <div className="col-span-2 text-center bg-gray-50 border border-gray-200 p-10 rounded-lg">

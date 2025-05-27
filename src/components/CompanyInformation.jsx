@@ -78,7 +78,11 @@ export default function CompanyInformation({ companyId }) {
             Website: companyData.Website_URL || "",
             ContactEmail: companyData.Contact_Email || "",
             FoundingYear: companyData.Founding_Year || "",
-            Headquarters: await getLocationFromLatLong(companyData.HQ_Location.lat, companyData.HQ_Location.lng) || "Location not specified",
+            Headquarters:
+              (await getLocationFromLatLong(
+                companyData.HQ_Location.lat,
+                companyData.HQ_Location.lng
+              )) || "Location not specified",
             TeamSize: companyData.Team_Size || "",
             sdgs: companyData.SDG,
           };
@@ -105,7 +109,7 @@ export default function CompanyInformation({ companyId }) {
     }
   }, [id]);
   return (
-    <div className="p-6 font-sans max-w-7xl mx-auto my-20">
+    <div className="p-6 font-sans max-w-screen-2xl mx-auto my-20">
       {loading && (
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
@@ -119,7 +123,7 @@ export default function CompanyInformation({ companyId }) {
       )}
 
       {!loading && company && (
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-screen-2xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
             <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
             <h1 className="text-3xl md:text-5xl font-bold mb-1">
@@ -130,7 +134,7 @@ export default function CompanyInformation({ companyId }) {
             <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-lg p-6 border border-orange-200 mt-10">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Founded */}
               <div className="border border-gray-200 rounded-lg p-4 flex items-start">

@@ -26,13 +26,12 @@ const InvestorCard = ({ name, Icon, index }) => (
     className={`text-center p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animation-delay-${
       index * 100
     }`}
-    title={name} // Add title attribute for full name on hover if truncated
+    title={name}
   >
     <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-md">
       <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
     </div>
-    <p className="text-gray-700 font-medium text-xs sm:text-sm line-clamp-2 break-words">
-      {/* line-clamp-2 allows two lines, break-words helps with long single words */}
+    <p className="text-gray-700 text-xs sm:text-sm font-semibold line-clamp-2 break-words">
       {name}
     </p>
   </div>
@@ -257,7 +256,10 @@ export default function FundingInvestorsDashboard() {
     !loading
   ) {
     return (
-      <section className="min-h-screen bg-gray-50 flex justify-center items-center p-8">
+      <section
+        id="funding"
+        className="min-h-screen bg-gray-50 flex justify-center items-center p-8"
+      >
         <div className="max-w-md mx-auto text-center p-8 bg-white rounded-xl shadow-lg border border-gray-200">
           <DollarSign className="w-16 h-16 text-gray-400 mx-auto mb-5" />
           <h2 className="text-2xl font-semibold text-gray-700 mb-3">
@@ -274,13 +276,13 @@ export default function FundingInvestorsDashboard() {
 
   return (
     <section
-      className={`min-h-screen bg-white p-6 sm:p-8 transition-opacity duration-1000 ${
+      className={`min-h-screen bg-white p-6 sm:p-8 transition-opacity duration-300 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-screen-2xl mx-auto">
         <div
-          className="text-center mb-12 sm:mb-16 transform transition-all duration-700 delay-200"
+          className="text-center mb-12 sm:mb-16 transform transition-all duration-300"
           style={{
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? "translateY(0)" : "translateY(20px)",
@@ -302,7 +304,7 @@ export default function FundingInvestorsDashboard() {
           {/* Left Column (Wider) - Funding Breakdown & Total */}
           <div className="lg:col-span-2 space-y-8">
             <div
-              className={`bg-orange-100/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl border border-orange-100/60 transform transition-all duration-700 delay-300 hover:-translate-y-1.5 ${
+              className={`bg-orange-100/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl border border-orange-100/60 transform transition-all duration-300 hover:-translate-y-1.5 ${
                 isVisible
                   ? "opacity-100 translate-x-0"
                   : "opacity-0 -translate-x-10"
@@ -333,7 +335,7 @@ export default function FundingInvestorsDashboard() {
             </div>
 
             <div
-              className={`bg-orange-100/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl border border-green-100/60 transform transition-all duration-700 delay-400 hover:-translate-y-1.5 ${
+              className={`bg-orange-100/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl border border-green-100/60 transform transition-all duration-300 hover:-translate-y-1.5 ${
                 isVisible
                   ? "opacity-100 translate-x-0"
                   : "opacity-0 -translate-x-10"
@@ -357,7 +359,7 @@ export default function FundingInvestorsDashboard() {
           <div className="lg:col-span-2 space-y-8">
             {investors.length > 0 && (
               <div
-                className={`bg-orange-100/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl border border-blue-100/60 transform transition-all duration-700 delay-500 ${
+                className={`bg-orange-100/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl border border-blue-100/60 transform transition-all duration-300 ${
                   isVisible
                     ? "opacity-100 translate-x-0"
                     : "opacity-0 translate-x-10"
@@ -384,7 +386,7 @@ export default function FundingInvestorsDashboard() {
 
             {focusAreas.length > 0 && (
               <div
-                className={`bg-orange-100/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl border border-purple-100/60 transform transition-all duration-700 delay-600 hover:-translate-y-1.5 ${
+                className={`bg-orange-100/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl border border-purple-100/60 transform transition-all duration-300 hover:-translate-y-1.5 ${
                   isVisible
                     ? "opacity-100 translate-x-0"
                     : "opacity-0 translate-x-10"
@@ -399,7 +401,7 @@ export default function FundingInvestorsDashboard() {
                   {focusAreas.map((area, index) => (
                     <span
                       key={index}
-                      className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full text-orange-600 text-xs sm:text-sm font-medium shadow-md transition-all duration-300 hover:shadow-lg transform hover:scale-105 cursor-default bg-white`}
+                      className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full text-orange-600 text-xs sm:text-sm font-medium shadow-md transition-all duration-300 hover:shadow-lg cursor-default bg-white`}
                       title={area} // Add title for full text on hover
                     >
                       {area}
@@ -412,24 +414,6 @@ export default function FundingInvestorsDashboard() {
         </div>
       </div>
       <style jsx>{`
-        .animation-delay-100 {
-          animation-delay: 0.1s;
-        }
-        .animation-delay-200 {
-          animation-delay: 0.2s;
-        }
-        .animation-delay-300 {
-          animation-delay: 0.3s;
-        }
-        .animation-delay-400 {
-          animation-delay: 0.4s;
-        }
-        .animation-delay-500 {
-          animation-delay: 0.5s;
-        }
-        .animation-delay-600 {
-          animation-delay: 0.6s;
-        }
         .line-clamp-2 {
           display: -webkit-box;
           -webkit-line-clamp: 2;

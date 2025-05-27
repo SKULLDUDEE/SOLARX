@@ -90,7 +90,7 @@ export default function StatsSection() {
   return (
     <section
       id="stats"
-      className="bg-white py-12 sm:py-16 md:py-20 relative min-h-[60vh] max-w-7xl mx-auto"
+      className="bg-white pb-12 sm:pb-16 md:pb-20 relative min-h-[60vh] max-w-screen-2xl mx-auto"
     >
       {/* Background Blurs */}
       <div className="absolute inset-0 overflow-hidden">
@@ -99,7 +99,7 @@ export default function StatsSection() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 relative z-10">
+      <div className="mx-auto px-4 sm:px-6 relative z-10">
         {/* Header */}
         <div className="text-center mb-10 sm:mb-12 md:mb-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 text-orange-600 text-shadow">
@@ -135,7 +135,7 @@ export default function StatsSection() {
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-10 sm:mt-12 md:mt-16">
+        <div className="text-center my-10 sm:my-12 md:my-16">
           <a
             href="#global-reach"
             className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8 rounded-full shadow-md sm:shadow-lg transition-all hover:scale-105"

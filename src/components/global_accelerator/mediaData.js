@@ -48,7 +48,7 @@ export const mediaMentionsData = [
         quotePlaceholder: "This year, the Challenge has identified top 20 startups from across Asia-Pacific, including Sri Lanka, Australia, Papua New Guinea, UAE, Saudi Arabia, and other countries. Four of the twenty selected start-ups are from Sri Lanka. These start-ups were introduced to the Challenge in a workshop organised by High Commission of India earlier this year, in partnership withInvest India and the International Solar Alliance.",
     },
     {
-        id: 5,
+        id: 6,
         headline: "SOLARX STARTUP CHALLENGE 2023",
         publisher: "Green Scene Ethiopia",
         platform: "Article",

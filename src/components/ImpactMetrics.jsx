@@ -144,7 +144,7 @@ export default function ImpactMetrics({ companyId }) {
   }, [companyId]);
 
   return (
-    <div className="max-w-7xl mx-auto p-6 lg:p-0 my-20">
+    <div className="max-w-screen-2xl mx-auto p-6 lg:p-0 my-20">
       <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
         <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
         <h1 className="text-3xl md:text-5xl font-bold mb-1">

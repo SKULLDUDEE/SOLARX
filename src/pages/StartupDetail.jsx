@@ -100,10 +100,9 @@ export default function StartupDetail() {
   return (
     <div className="relative">
       <SolarXNavbar />
-      <div className="container mx-auto px-4 pt-20 pb-6">
+      <div className="max-w-screen-2xl mx-auto px-4 pb-6">
        
       </div>
-      {/* Pass the company ID as a number if possible */}
       <SolarFlowHero companyId={id} key={`hero-${id}`} />
       <MentorCarousel companyId={id} />
       <CompanyInfoSection companyId={id} />

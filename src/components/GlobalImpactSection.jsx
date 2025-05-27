@@ -213,11 +213,11 @@ const GlobalImpactSection = () => {
 
   return (
     <section
-      className={`py-20 bg-white relative overflow-hidden transition-opacity duration-200 max-w-7xl min-w-full mx-auto ${
+      className={`py-20 bg-white relative overflow-hidden transition-opacity duration-200 max-w-screen-2xl min-w-full mx-auto ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div
           className="text-center mb-16 transform transition-all duration-200"
           style={{

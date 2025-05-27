@@ -83,7 +83,6 @@ export default function SuccessStories() {
     window.addEventListener("resize", updateVisibleCards);
     return () => window.removeEventListener("resize", updateVisibleCards);
   }, [updateVisibleCards]);
-  // --- End Responsive Logic ---
 
   const showSlider = stories.length > visibleCards;
   const totalItems = stories.length;
@@ -120,8 +119,8 @@ export default function SuccessStories() {
   }, [currentSlide, visibleCards, stories, showSlider, totalItems]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-orange-50 to-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <section id="success-stories" className="min-h-screen bg-gradient-to-b from-white via-orange-50 to-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-screen-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-800">
@@ -159,7 +158,7 @@ export default function SuccessStories() {
           {/* Slides Wrapper - This handles the sliding effect */}
           <div className="overflow-hidden">
             <div
-              className="flex transition-transform duration-500 ease-in-out"
+              className="flex transition-transform duration-500 ease-in-out py-8"
               style={{
                 // This transform moves the whole strip of all items.
                 // We will only render the 'displayedStories'
@@ -185,7 +184,7 @@ export default function SuccessStories() {
                     key={story.title + index} // Use a more unique key if titles can repeat
                     className="flex flex-col h-full" // Ensure cards take full height of their grid cell
                   >
-                    <div className="flex-grow bg-white rounded-xl shadow-lg hover:shadow-2xl overflow-hidden transition-all duration-300 flex flex-col transform hover:-translate-y-1">
+                    <div className="flex-grow bg-white rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300 flex flex-col transform hover:-translate-y-1">
                       {/* Image with Country Badge */}
                       <div className="relative">
                         <img
@@ -270,6 +269,6 @@ export default function SuccessStories() {
           )}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

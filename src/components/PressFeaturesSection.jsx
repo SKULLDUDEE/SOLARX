@@ -113,7 +113,7 @@ export default function PressFeaturesSection({ companyId }) {
   }, [companyId]); // Re-fetch if companyId changes
 
   return (
-    <div className="max-w-7xl mx-auto px-6 sm:px-10 py-16 bg-white">
+    <div className="max-w-screen-2xl mx-auto px-6 sm:px-10 py-16 bg-white">
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
         <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>

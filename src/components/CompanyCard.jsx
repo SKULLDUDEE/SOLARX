@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { fetchCompanyById } from "../services/api";
 import { getLocationFromLatLong } from "../utils/strapiHelper";
+import { MapPin } from "lucide-react";
 
 export default function CompanyCard({ companyId, regionClass }) {
   const [company, setCompany] = useState(null);
@@ -234,17 +235,20 @@ export default function CompanyCard({ companyId, regionClass }) {
 
       <div className="p-4 sm:p-5 flex flex-col flex-grow">
         <h3
-          className="text-base sm:text-lg font-bold mb-1 text-gray-800 line-clamp-1"
+          className="text-lg sm:text-xl font-bold mb-1 text-gray-800 line-clamp-1"
           title={company.name}
         >
           {company.name}
         </h3>
-        <p
-          className="text-xs sm:text-sm text-gray-500 mb-2 line-clamp-1"
-          title={company.location}
-        >
-          {company.location}
-        </p>
+        <div className="flex items-center mb-2">
+          <MapPin size={15} className="mr-1 text-orange-600" />
+          <p
+            className="text-base  text-gray-500 line-clamp-1"
+            title={company.location}
+          >
+            {company.location}
+          </p>
+        </div>
         <p
           className="text-sm text-gray-700 mb-3 line-clamp-2 flex-grow" // flex-grow to push footer down
           style={{ minHeight: "2.5rem" }} // Approx 2 lines of text
@@ -252,7 +256,7 @@ export default function CompanyCard({ companyId, regionClass }) {
         >
           {company.description}
         </p>
-        <div className="mt-auto flex justify-between items-center pt-2 border-t border-gray-200">
+        <div className="mt-auto flex justify-between items-center pt-4 border-t border-gray-200">
           <span
             className={`inline-block px-2.5 py-1 text-xs font-semibold ${categoryTextColorClass} ${categoryBgColorClass} rounded-full`}
             title={`Category: ${company.category}`}

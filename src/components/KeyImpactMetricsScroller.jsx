@@ -1,18 +1,19 @@
 const ImpactMetricDisplay = ({ label, value }) => (
   <div
-    className={`bg-white rounded-xl shadow-md transition-all  duration-300 ease-in-out border border-gray-100 hover:border-orange-600 hover:shadow-[0px_0px_10px_3px_rgba(234,88,12,1)] hover:scale-105 w-[280px] h-[200px] flex-shrink-0`}
+    className={`bg-white rounded-xl shadow-md transition-all  duration-300 ease-in-out border border-gray-100 hover:border-orange-600 hover:shadow-[0px_0px_10px_3px_rgba(234,88,12,1)] hover:scale-105 w-[320px] h-[250px] flex-shrink-0`}
     // Each card has a fixed width and flex-shrink-0
   >
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full">
       <span
-        className="text-xl font-semibold text-center text-gray-800 bg-orange-300/70 w-full rounded-t-xl px-4 sm:px-6 py-4 sm:py-5 truncate"
+        className="text-2xl font-semibold text-center text-gray-800 bg-orange-300/70 w-full rounded-t-xl px-4 sm:px-6 py-4 sm:py-5 truncate"
         title={label}
       >
         {label}
       </span>
-      <span className="text-xl sm:text-2xl font-bold text-gray-800 flex-1 flex items-center justify-center p-4 text-center">
+      <span className="text-xl sm:text-3xl font-bold text-gray-800 flex-1 flex items-center justify-center text-center">
         {value}
       </span>
+      {/* <div className="w-full h-[5px] bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div> */}
     </div>
   </div>
 );
@@ -49,7 +50,7 @@ const KeyImpactMetricsScroller = ({ metrics, isVisible }) => {
       className={`w-full py-12 md:py-20 bg-white transition-opacity duration-700 ease-out`}
       style={{ transitionDelay: isVisible ? "0.3s" : "0s" }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 md:mb-12">
           <h2 className="text-3xl md:text-4xl font-extrabold text-orange-600 mb-3">
             Key Impact Metrics

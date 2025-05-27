@@ -158,15 +158,10 @@ export default function SolarXWinners() {
 
   return (
     <section
-      id="startups"
-      className="max-w-7xl mx-auto min-w-full bg-gradient-to-b from-white via-orange-50 to-white py-16 md:py-24 relative"
+      id="winners"
+      className="max-w-screen-2xl mx-auto min-w-full bg-gradient-to-b from-white via-orange-50 to-white py-16 md:py-24 relative"
     >
-      {/* Optional: Subtle background pattern or elements if desired */}
-      {/* <div className="absolute inset-0 overflow-hidden opacity-20"> */}
-      {/* Pattern example */}
-      {/* </div> */}
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-800">
             Meet Our <span className="text-orange-600">SolarX Winners</span>

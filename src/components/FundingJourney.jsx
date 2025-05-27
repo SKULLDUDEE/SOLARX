@@ -193,16 +193,7 @@ export default function FundingJourney({ companyId }) {
 
   return (
     <section className="py-20 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden opacity-5">
-        <div className="absolute top-10 right-10 w-72 h-72 bg-orange-300 rounded-full filter blur-3xl animate-pulse"></div>
-        <div
-          className="absolute bottom-10 left-10 w-96 h-96 bg-orange-200 rounded-full filter blur-3xl animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
-      </div>
-
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="mx-auto px-6 relative z-10">
         {/* Header */}
         <div
           className={`text-center mb-20 transform transition-all duration-1000 ${
@@ -268,7 +259,7 @@ export default function FundingJourney({ companyId }) {
 
         {/* Content when data is available */}
         {!loading && !error && fundingRounds.length > 0 && (
-          <div className="grid lg:grid-cols-2 gap-16 max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 max-w-screen-2xl mx-auto">
             {/* Left Side - Funding Received */}
             <div
               className={`transform transition-all duration-1000 delay-200 ${

@@ -10,17 +10,14 @@ import {
   Cpu,
   XCircle,
   Loader2,
-  MapPin
-  // MapPin, // You can use this for the legend if desired
+  MapPin,
 } from "lucide-react";
 
-// --- Constants ---
 const STARTUPS_API_URL = "http://localhost:1337/api/startups?populate=*";
 
 const HQ_MARKER_COLOR_HEX = 0xff5722; // Orange color for HQ markers
 const GLOBE_RADIUS = 1;
 
-// --- Helper Functions ---
 const extractRichTextToString = (richTextArray) => {
   let textContent = "";
   if (Array.isArray(richTextArray)) {
@@ -53,7 +50,6 @@ const SolarXGlobalReach = () => {
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const globeMeshRef = useRef(null);
-  // const atmosphereMeshRef = useRef(null); // Atmosphere is part of base setup, not directly manipulated later
   const controlsRef = useRef(null);
   const animationFrameIdRef = useRef(null);
   const markersGroupRef = useRef(null);
@@ -74,7 +70,6 @@ const SolarXGlobalReach = () => {
   const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // --- Data Fetching and Processing ---
   useEffect(() => {
     const fetchData = async () => {
       setIsComponentLoading(true);
@@ -89,13 +84,12 @@ const SolarXGlobalReach = () => {
         }
 
         const startupsResult = await startupsResponse.json();
-        const fetchedStartups = startupsResult.data || []; // Access the 'data' array
+        const fetchedStartups = startupsResult.data || []; 
         setAllStartups(fetchedStartups);
 
         const points = [];
         if (fetchedStartups.length > 0) {
           fetchedStartups.forEach((startup) => {
-            // Access HQ_Location directly from the startup object
             const hqLocation = startup.HQ_Location;
 
             if (
@@ -111,7 +105,6 @@ const SolarXGlobalReach = () => {
                 type: "Headquarters",
                 startupId: startup.id,
                 startupName: startup.Name || "N/A",
-                // The 'Location' field is the string, HQ_Location is the lat/lng object
                 startupLocationString: startup.Location || "N/A",
                 startupCountry: startup.Country || "N/A",
                 startupRegions: startup.Regions?.join(", ") || "N/A",
@@ -586,11 +579,12 @@ const SolarXGlobalReach = () => {
       )}
 
       <section
+        id="global-reach"
         className={`py-12 sm:py-16 bg-gradient-to-b from-gray-50 via-white to-gray-50 transition-all duration-300 ${
           isFullscreen ? "hidden" : ""
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <header className="text-center mb-10 sm:mb-12 md:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 mb-3 sm:mb-4">
               Global Reach & Impact

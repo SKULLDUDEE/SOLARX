@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react";
-import { Bolt, DollarSign } from "lucide-react";
-import axios from "axios";
 import { getLocationFromLatLong } from "../utils/strapiHelper";
 
-// import { fetchCompanyHeroData } from '../services/api';
-
 const SolarFlowHero = ({ companyId }) => {
-  // console.log("SolarFlowHero - Received company ID:", companyId);
   const [showEfficiency, setShowEfficiency] = useState(false);
   const [showCost, setShowCost] = useState(false);
   const [showContent, setShowContent] = useState(false);
@@ -90,7 +85,7 @@ const SolarFlowHero = ({ companyId }) => {
                 company.HQ_Location.lng
               )) || "Location not specified",
             teamSize: company.Team_Size,
-            imageUrl: logoUrl,
+            LogoUrl: logoUrl,
             coverImage: company.Cover_Image.url,
           };
 
@@ -144,31 +139,29 @@ const SolarFlowHero = ({ companyId }) => {
 
   return (
     <div className="w-full min-h-screen bg-gray-100 flex items-center justify-center p-4 mt-[40px]">
-      <div className="max-w-6xl w-full flex flex-col lg:flex-row items-center gap-8">
-        {/* Left content */}
-        <div className={`w-full lg:w-1/2`}>
-          <div className="text-5xl font-bold mb-6">
+      <div className="max-w-screen-2xl mx-auto w-full flex flex-col lg:flex-row items-center justify-between px-4 md:px-8">
+        <div className={`w-full lg:w-2/3 `}>
+          <div className="text-5xl md:text-6xl font-bold mb-6 flex flex-col space-y-4 items-start">
             {companyData && companyData.name && (
               <span className="text-orange-600 text-shadow">
                 {companyData.name}
               </span>
             )}
+            <div className="w-1/5 h-[5px] bg-gradient-to-r from-orange-500 to-red-500 rounded-full mb-6"></div>
           </div>
 
-          {/* Company description */}
-          <p className="text-gray-700 text-md mb-4">
+          <p className="text-gray-700 text-md md:text-xl mb-4 w-4/5">
             {companyData && companyData.description && (
               <span>{companyData.description}</span>
             )}
           </p>
         </div>
 
-        {/* Right side showcase - Only the logo image */}
-        <div className="w-full lg:w-1/2 relative">
+        <div className="w-full lg:w-1/3 relative">
           {/* Company logo image */}
-          {companyData && companyData.imageUrl ? (
+          {companyData && companyData.LogoUrl ? (
             <img
-              src={`http://localhost:1337${companyData.coverImage}`}
+              src={`http://localhost:1337${companyData.LogoUrl}`}
               alt={companyData.name || "Cover Image"}
               className="w-full h-full object-contain rounded-lg shadow-lg"
             />
