@@ -13,25 +13,136 @@ const GlobalPresence = ({ companyId }) => {
   const [operationalRegions, setOperationalRegions] = useState([]); // For text display
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [startupData, setStartupData] = useState({
+    sectorFocus: [],
+    technologyTypes: []
+  });
 
-  // Sample static data for Sector Focus and Technology Types, assuming these might come from another part of startup data or be relatively static
-  // In a real app, these would likely be props or fetched alongside other startup details.
-  const staticStartupData = {
-    sectorFocus: [
-      "Rural Electrification",
-      "Clean Water Access",
-      "Sustainable Agriculture",
-      "Community Health",
-      "Digital Literacy",
-    ],
-    technologyTypes: [
-      "Decentralized Solar Grids",
-      "Water Purification Systems",
-      "IoT for Agriculture",
-      "Telemedicine Platforms",
-      "Offline Educational Content Delivery",
-    ],
-  };
+  // Fetch sector focus and technology types data
+  useEffect(() => {
+    const fetchStartupData = async () => {
+      if (!companyId) {
+        return;
+      }
+      
+      try {
+        // Fetch startup details including sector focus and technology types
+        const baseUrl = import.meta.env.VITE_API_URL;
+        const apiUrl = `${baseUrl}/api/startups?filters[id][$eq]=${companyId}&populate=Sector_Focus&populate=Technology_Types`;
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          const errorMessage = errorData?.error?.message || 
+            `API request failed: ${response.status} ${response.statusText}`;
+          console.error("Error fetching startup data:", errorMessage);
+          
+          // Use fallback data if API request fails
+          setStartupData({
+            sectorFocus: [
+              "Rural Electrification",
+              "Clean Water Access",
+              "Sustainable Agriculture",
+              "Community Health",
+              "Digital Literacy",
+            ],
+            technologyTypes: [
+              "Decentralized Solar Grids",
+              "Water Purification Systems",
+              "IoT for Agriculture",
+              "Telemedicine Platforms",
+              "Offline Educational Content Delivery",
+            ]
+          });
+          return;
+        }
+        
+        const result = await response.json();
+        console.log("Startup Data API Response:", result);
+        
+        if (result && result.data && result.data.length > 0) {
+          const startup = result.data[0].attributes;
+          
+          // Extract sector focus data
+          const sectorFocus = startup.Sector_Focus?.data?.map(item => 
+            item.attributes?.Name || item.attributes?.Title || "Unnamed Sector"
+          ) || [];
+          
+          // Extract technology types data
+          const technologyTypes = startup.Technology_Types?.data?.map(item => 
+            item.attributes?.Name || item.attributes?.Title || "Unnamed Technology"
+          ) || [];
+          
+          // If we got empty arrays from the API, use fallback data
+          const finalSectorFocus = sectorFocus.length > 0 ? sectorFocus : [
+            "Rural Electrification",
+            "Clean Water Access",
+            "Sustainable Agriculture",
+            "Community Health",
+            "Digital Literacy",
+          ];
+          
+          const finalTechnologyTypes = technologyTypes.length > 0 ? technologyTypes : [
+            "Decentralized Solar Grids",
+            "Water Purification Systems",
+            "IoT for Agriculture",
+            "Telemedicine Platforms",
+            "Offline Educational Content Delivery",
+          ];
+          
+          setStartupData({
+            sectorFocus: finalSectorFocus,
+            technologyTypes: finalTechnologyTypes
+          });
+          
+          console.log("Processed startup data:", { 
+            sectorFocus: finalSectorFocus, 
+            technologyTypes: finalTechnologyTypes 
+          });
+        } else {
+          console.log("No startup data found for this ID.");
+          // Set fallback data if no startup data is found
+          setStartupData({
+            sectorFocus: [
+              "Rural Electrification",
+              "Clean Water Access",
+              "Sustainable Agriculture",
+              "Community Health",
+              "Digital Literacy",
+            ],
+            technologyTypes: [
+              "Decentralized Solar Grids",
+              "Water Purification Systems",
+              "IoT for Agriculture",
+              "Telemedicine Platforms",
+              "Offline Educational Content Delivery",
+            ]
+          });
+        }
+      } catch (err) {
+        console.error("Error processing startup data:", err);
+        // Set fallback data if an error occurs
+        setStartupData({
+          sectorFocus: [
+            "Rural Electrification",
+            "Clean Water Access",
+            "Sustainable Agriculture",
+            "Community Health",
+            "Digital Literacy",
+          ],
+          technologyTypes: [
+            "Decentralized Solar Grids",
+            "Water Purification Systems",
+            "IoT for Agriculture",
+            "Telemedicine Platforms",
+            "Offline Educational Content Delivery",
+          ]
+        });
+      }
+    };
+    
+    fetchStartupData();
+  }, [companyId]);
 
   useEffect(() => {
     const fetchGlobalPresenceData = async () => {
@@ -47,7 +158,8 @@ const GlobalPresence = ({ companyId }) => {
         // and each item in it can be linked to multiple startups.
         // We expect the response to be an array of global-presence entries.
         // If a startup can only have one global-presence entry, the API design might differ.
-        const apiUrl = `http://localhost:1337/api/global-presences?populate=Presence&filters[startups][id][$eq]=${companyId}`;
+        const baseUrl = import.meta.env.VITE_API_URL;
+        const apiUrl = `${baseUrl}/api/global-presences?populate=Presence&filters[startups][id][$eq]=${companyId}`;
         const response = await fetch(apiUrl);
 
         if (!response.ok) {
@@ -309,11 +421,11 @@ const GlobalPresence = ({ companyId }) => {
 
   return (
     <section
-      className={`py-16 relative transition-colors duration-300 max-w-screen-2xl ${
+      className={`py-16 relative transition-colors duration-300 max-w-screen-2xl  ${
         darkMode ? "bg-gray-900" : "bg-gray-50"
       }`}
     >
-      <div className="mx-auto px-4">
+      <div className="mx-auto px-4 ml-20">
         <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
           <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
           <h1 className="text-3xl md:text-5xl font-bold mb-1">
@@ -460,13 +572,13 @@ const GlobalPresence = ({ companyId }) => {
               /> */}
               <InfoCard
                 title="Sector Focus"
-                items={staticStartupData.sectorFocus}
+                items={startupData.sectorFocus}
                 icon={<Zap />}
                 cardColor="text-blue-500"
               />
               <InfoCard
                 title="Technology Types"
-                items={staticStartupData.technologyTypes}
+                items={startupData.technologyTypes}
                 icon={<Cpu />}
                 cardColor="text-green-500"
               />

@@ -113,35 +113,25 @@ export default function StatsSection() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           {stats.map((stat) => (
             <div
               key={stat.id}
-              className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8 shadow-lg sm:shadow-xl hover:scale-105 transition-all text-center border border-orange-100 hover:border-orange-300"
+              className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 shadow-md sm:shadow-lg hover:scale-105 transition-all text-center border border-orange-100 hover:border-orange-300"
             >
-              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 orange-gradient rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
-                <div className="scale-75 sm:scale-90 md:scale-100">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 orange-gradient rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-md">
+                <div className="scale-60 sm:scale-75 md:scale-90">
                   {stat.icon}
                 </div>
               </div>
-              <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-orange-600 mb-2 sm:mb-3">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-orange-600 mb-1 sm:mb-2">
                 {stat.value}
               </h3>
-              <p className="text-sm sm:text-base text-gray-700 font-medium">
+              <p className="text-xs sm:text-sm text-gray-700 font-medium">
                 {stat.label}
               </p>
             </div>
           ))}
-        </div>
-
-        {/* Call to Action */}
-        <div className="text-center my-10 sm:my-12 md:my-16">
-          <a
-            href="#global-reach"
-            className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8 rounded-full shadow-md sm:shadow-lg transition-all hover:scale-105"
-          >
-            Explore Our Global Reach
-          </a>
         </div>
       </div>
     </section>

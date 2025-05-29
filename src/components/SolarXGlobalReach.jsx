@@ -13,7 +13,7 @@ import {
   MapPin,
 } from "lucide-react";
 
-const STARTUPS_API_URL = "http://localhost:1337/api/startups?populate=*";
+const STARTUPS_API_URL = `${import.meta.env.VITE_API_URL}/api/startups?populate=*`;
 
 const HQ_MARKER_COLOR_HEX = 0xff5722; // Orange color for HQ markers
 const GLOBE_RADIUS = 1;
@@ -617,7 +617,7 @@ const SolarXGlobalReach = () => {
 
           {!apiError &&
             !isComponentLoading && ( // Only render grid when data is ready and no error
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8 items-start">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-20 items-start">
                 {/* Globe Section */}
                 <div className="lg:col-span-3 bg-gradient-to-br from-gray-700 to-gray-900 p-0.5 sm:p-1 rounded-xl sm:rounded-2xl shadow-2xl">
                   <div className="bg-gray-800 p-4 sm:p-6 rounded-lg sm:rounded-xl">

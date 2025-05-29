@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-export default function ClimateImpactMetrics({ companyId }) {
+export default function ClimateImpactMetrics() {
   const [isVisible, setIsVisible] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [animatedValues, setAnimatedValues] = useState({});
@@ -70,10 +70,9 @@ export default function ClimateImpactMetrics({ companyId }) {
         setLoading(true);
         
         // Construct the API URL
-        let apiUrl = 'http://localhost:1337/api/impact-metrics?populate=*';
-        
-        // We're not filtering by company ID anymore since the relationship might not be set up correctly
-        // Instead, we'll fetch all metrics and display them
+        const baseUrl = import.meta.env.VITE_API_URL;
+        const apiPath = import.meta.env.VITE_CMS_API_PATH || "/api";
+        const apiUrl = `${baseUrl}${apiPath}/impact-metrics?populate=*`;
         
         const response = await fetch(apiUrl);
         const result = await response.json();
@@ -242,11 +241,6 @@ export default function ClimateImpactMetrics({ companyId }) {
     setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
   };
 
-  const getCurrentCards = () => {
-    const startIndex = currentSlide * CARDS_PER_SLIDE;
-    return metrics.slice(startIndex, startIndex + CARDS_PER_SLIDE);
-  };
-
   return (
     <section 
       ref={sectionRef}
@@ -294,7 +288,17 @@ export default function ClimateImpactMetrics({ companyId }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             <h3 className="text-xl font-medium text-gray-700 mb-2">No Impact Metrics Available</h3>
-            <p className="text-gray-500">This company hasn't added any impact metrics yet.</p>
+            <p className="text-gray-500 mb-4">This company hasn't added any impact metrics yet.</p>
+            <div className="flex justify-center">
+              <a
+                href={`${import.meta.env.VITE_API_URL}/admin/content-manager/collectionType/api::impact-metric.impact-metric/create`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md transition-colors duration-300"
+              >
+                Add Impact Metrics
+              </a>
+            </div>
           </div>
         )}
 
@@ -340,7 +344,7 @@ export default function ClimateImpactMetrics({ companyId }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                       {metrics
                         .slice(slideIndex * CARDS_PER_SLIDE, (slideIndex + 1) * CARDS_PER_SLIDE)
-                        .map((metric, index) => (
+                        .map((metric) => (
                           <div
                             key={metric.id}
                             className={`transform transition-all duration-700 ${metric.delay} ${

@@ -10,32 +10,10 @@ export default function MentorCarousel({ darkMode = false, companyId }) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // console.log("MentorCarousel: Fetching mentors data...");
         const response = await fetchMentors(companyId);
-        console.log(
-          "MentorCarousel: API response received for mentors:",
-          response.data
-        );
-
-        // console.log("MentorCarousel: Raw API response:", response);
 
         if (response && response.data) {
-          // console.log(
-          //   "MentorCarousel: Found mentors/founders data:",
-          //   response.data
-          // );
-
-          // Log the entire response structure to understand the data format
-          // console.log(
-          //   "MentorCarousel: Full response structure:",
-          //   JSON.stringify(response, null, 2)
-          // );
-
-          // Process the founders data from Strapi as mentors
           const processedMentors = response.data.map((founder) => {
-            // console.log("MentorCarousel: Raw founder data:", founder);
-
-            // Direct access to properties without assuming attributes structure
             const mentorData = {
               id: founder.id,
               name: founder.Name || "",
@@ -46,40 +24,21 @@ export default function MentorCarousel({ darkMode = false, companyId }) {
                 : `https://placehold.co/400x400/orange/white?text=${encodeURIComponent(
                     founder.name || "Mentor"
                   )}`,
-              // linkedin: founder.linkedin || '',
-              // twitter: founder.twitter || '',
-              // status: founder.publishedAt ? 'Published' : 'Draft'
             };
-
-            // console.log("MentorCarousel: Processed mentor data:", mentorData);
             return mentorData;
           });
 
-          // console.log(
-          //   "MentorCarousel: Final processed mentors:",
-          //   processedMentors
-          // );
           setMentors(processedMentors);
 
-          // Set active index to first mentor if available
           if (processedMentors.length > 0) {
-            // console.log(
-            //   "MentorCarousel: Setting active index to first mentor ID:",
-            //   processedMentors[0].id
-            // );
             setActiveIndex(processedMentors[0].id);
           }
         } else {
-          console.error("MentorCarousel: No mentor data received from API");
+          console.error("No mentor data received from API");
           setMentors([]);
         }
       } catch (error) {
-        console.error("MentorCarousel: Error fetching mentors data:", error);
-        console.error(
-          "MentorCarousel: Error details:",
-          error.message,
-          error.response?.data
-        );
+        console.error("Error fetching mentors data:", error);
         setMentors([]);
       } finally {
         setLoading(false);
@@ -87,63 +46,47 @@ export default function MentorCarousel({ darkMode = false, companyId }) {
     };
 
     fetchData();
-  }, []);
+  }, [companyId]);
 
-  // Create a state to track the active mentor index (0, 1, 2...) instead of ID
   const [activePosition, setActivePosition] = useState(0);
 
   useEffect(() => {
     if (mentors.length > 0) {
-      // Find the position of the active mentor by ID
       const activeMentorPosition = mentors.findIndex(
         (mentor) => mentor.id === activeIndex
       );
-      // console.log(
-      //   "MentorCarousel: Active mentor ID:",
-      //   activeIndex,
-      //   "Position:",
-      //   activeMentorPosition
-      // );
 
       if (activeMentorPosition !== -1) {
         setActivePosition(activeMentorPosition);
       } else {
-        // If not found, default to first mentor
         setActivePosition(0);
       }
     }
   }, [activeIndex, mentors]);
 
-  // Function to determine card position classes
   const getCardClasses = (mentorId) => {
     const baseClasses =
       "absolute transition-all duration-700 transform w-64 md:w-80 filter";
 
-    // If this is the active mentor
     if (mentorId === activeIndex) {
-      // console.log("MentorCarousel: Rendering active mentor:", mentorId);
       return `${baseClasses} scale-100 z-30 opacity-100 blur-none`;
     }
 
     if (mentors.length === 0) return baseClasses;
 
-    // Find position of this mentor
     const mentorPosition = mentors.findIndex((m) => m.id === mentorId);
     if (mentorPosition === -1) return `${baseClasses} opacity-0`;
 
     const totalMentors = mentors.length;
 
-    // Calculate next and previous positions
     const nextPosition = (activePosition + 1) % totalMentors;
     const prevPosition =
       activePosition === 0 ? totalMentors - 1 : activePosition - 1;
 
-    // If this is the previous mentor
     if (mentorPosition === prevPosition) {
       return `${baseClasses} scale-75 -translate-x-32 md:-translate-x-64 z-20 opacity-70 blur-sm`;
     }
 
-    // If this is the next mentor
     if (mentorPosition === nextPosition) {
       return `${baseClasses} scale-75 translate-x-32 md:translate-x-64 z-10 opacity-70 blur-sm`;
     }
@@ -153,13 +96,13 @@ export default function MentorCarousel({ darkMode = false, companyId }) {
 
   return (
     <section
-      className={`py-16 relative overflow-hidden ${
+      className={`py-16 relative overflow-hidden h-[80%] ${
         darkMode ? "bg-gray-900" : "bg-gray-50"
       }`}
     >
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">
+          <h1 className="text-3xl sm:text-4xl font-extrabold mb-4">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
               Meet our Founders
             </span>
@@ -173,7 +116,6 @@ export default function MentorCarousel({ darkMode = false, companyId }) {
           </div>
         ) : (
           <>
-            {/* Mentors Carousel */}
             <div className="relative">
               <div className="flex flex-wrap justify-center gap-6">
                 {mentors.length > 0 ? (
@@ -214,9 +156,7 @@ export default function MentorCarousel({ darkMode = false, companyId }) {
                               {mentor.description}
                             </p>
                           </div>
-                          <div className="flex space-x-3">
-                            {/* Social links */}
-                          </div>
+                          <div className="flex space-x-3"></div>
                         </div>
                       </div>
                     </div>

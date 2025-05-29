@@ -15,8 +15,9 @@ export default function MediaCoverageSection() {
       try {
         setLoading(true);
 
+        const baseUrl = import.meta.env.VITE_API_URL;
         const res = await fetch(
-          "http://localhost:1337/api/startups?populate=Media"
+          `${baseUrl}/api/startups?populate=Media`
         );
         if (!res.ok) throw new Error(`Failed with status ${res.status}`);
         const json = await res.json();
@@ -52,7 +53,7 @@ export default function MediaCoverageSection() {
   }, []);
 
   return (
-    <div className="max-w-7xl min-w-full mx-auto pb-16 bg-white px-4">
+    <div className="max-w-5xl min-w-full mx-auto pb-16 bg-white px-4">
       <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 text-center">
         <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
           Media Coverage & Recognition

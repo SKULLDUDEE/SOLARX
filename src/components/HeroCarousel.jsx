@@ -3,7 +3,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 
-// --- Slide Data (can be fetched from CMS) ---
+
 const slidesData = [
   {
     id: "s1",
@@ -62,10 +62,12 @@ const slidesData = [
   },
 ];
 
-// --- Navigation Components ---
 const PrevButton = ({ enabled, onClick }) => (
   <button
-    className="absolute left-4 md:left-6 top-1/2 transform -translate-y-1/2 z-30 text-white/70 hover:text-white focus:outline-none transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 md:block disabled:opacity-30 disabled:cursor-not-allowed"
+    className="absolute left-4 md:left-6 top-1/2 transform -translate-y-1/2 z-30 
+               text-white/70 hover:text-white focus:outline-none transition-all duration-300 
+               opacity-0 group-hover/carousel:opacity-100 md:block 
+               disabled:opacity-30 disabled:cursor-not-allowed"
     onClick={onClick}
     disabled={!enabled}
     aria-label="Previous slide"
@@ -77,9 +79,15 @@ const PrevButton = ({ enabled, onClick }) => (
   </button>
 );
 
+/**
+ * Next button component for carousel navigation
+ */
 const NextButton = ({ enabled, onClick }) => (
   <button
-    className="absolute right-4 md:right-6 top-1/2 transform -translate-y-1/2 z-30 text-white/70 hover:text-white focus:outline-none transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 md:block disabled:opacity-30 disabled:cursor-not-allowed"
+    className="absolute right-4 md:right-6 top-1/2 transform -translate-y-1/2 z-30 
+               text-white/70 hover:text-white focus:outline-none transition-all duration-300 
+               opacity-0 group-hover/carousel:opacity-100 md:block 
+               disabled:opacity-30 disabled:cursor-not-allowed"
     onClick={onClick}
     disabled={!enabled}
     aria-label="Next slide"
@@ -91,6 +99,9 @@ const NextButton = ({ enabled, onClick }) => (
   </button>
 );
 
+/**
+ * Dot indicator button component for carousel navigation
+ */
 const DotButton = ({ selected, onClick, index }) => (
   <button
     className={`h-1 rounded-sm transition-all duration-500 ease-out focus:outline-none
@@ -106,14 +117,24 @@ const DotButton = ({ selected, onClick, index }) => (
   />
 );
 
-// --- Main Carousel Component ---
+/**
+ * HeroCarousel component - A responsive, accessible carousel for hero section
+ * Features autoplay, navigation controls, and responsive design
+ */
 export default function HeroCarousel() {
-  const NAVBAR_HEIGHT = "4.5rem"; // Example: "4rem", "64px", etc.
+  // Constants
+  const NAVBAR_HEIGHT = "4.5rem";
+  const AUTOPLAY_DELAY = 7000;
+  const AUTOPLAY_RESUME_DELAY = 5000;
+  
+  // Carousel configuration
   const autoplayOptions = {
-    delay: 7000,
+    delay: AUTOPLAY_DELAY,
     stopOnInteraction: false,
     stopOnMouseEnter: true,
   };
+  
+  // State hooks
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true, align: "start" },
     [Autoplay(autoplayOptions)]
@@ -124,19 +145,23 @@ export default function HeroCarousel() {
   const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
   const interactionTimeoutRef = useRef(null);
 
+  // Navigation callbacks
   const scrollPrev = useCallback(
     () => emblaApi && emblaApi.scrollPrev(),
     [emblaApi]
   );
+  
   const scrollNext = useCallback(
     () => emblaApi && emblaApi.scrollNext(),
     [emblaApi]
   );
+  
   const scrollTo = useCallback(
     (index) => emblaApi && emblaApi.scrollTo(index),
     [emblaApi]
   );
 
+  // Event handlers
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setSelectedIndex(emblaApi.selectedScrollSnap());
@@ -150,38 +175,50 @@ export default function HeroCarousel() {
     if (!autoplay) return;
 
     autoplay.stop();
+    
     if (interactionTimeoutRef.current) {
       clearTimeout(interactionTimeoutRef.current);
     }
+    
     interactionTimeoutRef.current = setTimeout(() => {
       autoplay.play();
-    }, 5000);
+    }, AUTOPLAY_RESUME_DELAY);
   }, [emblaApi]);
 
+  // Setup effect
   useEffect(() => {
     if (!emblaApi) return;
+    
     onSelect();
     setScrollSnaps(emblaApi.scrollSnapList());
+    
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
     emblaApi.on("pointerDown", onInteraction);
     emblaApi.on("keyDown", onInteraction);
 
+    // Cleanup function
     return () => {
       if (interactionTimeoutRef.current) {
         clearTimeout(interactionTimeoutRef.current);
       }
+      
+      emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
+      emblaApi.off("pointerDown", onInteraction);
+      emblaApi.off("keyDown", onInteraction);
     };
   }, [emblaApi, onSelect, onInteraction]);
 
+  // Preload images
   useEffect(() => {
-    // Simple image preloading for first few slides
     slidesData.slice(0, 2).forEach((slide) => {
       const img = new Image();
       img.src = slide.imgUrl;
     });
   }, []);
 
+  // Layout utility functions
   const getLayoutClasses = (layout) => {
     switch (layout) {
       case "left":
@@ -200,6 +237,7 @@ export default function HeroCarousel() {
 
   const getContentTransitionClasses = (layout, isActive) => {
     const baseTransition = "transition-all duration-700 ease-out";
+    
     if (!isActive) {
       switch (layout) {
         case "left":
@@ -215,62 +253,61 @@ export default function HeroCarousel() {
           return `${baseTransition} opacity-0 scale-90`;
       }
     }
-    return `${baseTransition} opacity-100 translate-x-0 translate-y-0 scale-100 delay-300`; // Delay for active content reveal
+    
+    return `${baseTransition} opacity-100 translate-x-0 translate-y-0 scale-100 delay-300`;
   };
 
+  // Button alignment utility
+  const getButtonAlignment = (layout) => {
+    if (layout === "left") return "justify-start";
+    if (layout === "right") return "justify-end";
+    return "justify-center";
+  };
+
+  // Render component
   return (
     <section
       id="home"
-      className="relative w-full h-screen min-h-[650px] max-h-[1080px] overflow-hidden group/carousel"
+      className="relative w-full overflow-hidden group/carousel"
       style={{
-        // Calculate height to be viewport height MINUS navbar height
         height: `calc(100vh - ${NAVBAR_HEIGHT})`,
-        // Add padding-top to push content below the fixed navbar
         paddingTop: NAVBAR_HEIGHT,
-        // Set min/max heights for better control on different screen sizes
-        minHeight: "100px", // Adjust as needed
-        maxHeight: `calc(90vh - ${NAVBAR_HEIGHT})`, // Ensure it doesn't exceed the calculated space
+        minHeight: "650px",
+        maxHeight: `calc(90vh - ${NAVBAR_HEIGHT})`,
       }}
       aria-roledescription="carousel"
       aria-label="Hero Highlights"
       onMouseEnter={() => emblaApi?.plugins?.()?.autoplay?.stop()}
       onMouseLeave={() => emblaApi?.plugins?.()?.autoplay?.play()}
     >
-      {/* Embla Viewport */}
+      {/* Carousel Viewport */}
       <div
         className="embla h-full overflow-hidden"
         ref={emblaRef}
-        style={{ height: "100%" }}
       >
-        {" "}
-        {/* Added overflow-hidden here */}
-        {/* Embla Container */}
+        {/* Carousel Container */}
         <div className="embla__container flex h-full">
           {slidesData.map((slide, index) => (
-            // Embla Slide
             <div
-              className={`embla__slide relative h-full min-w-0 ${slide.bgClass}`} // Applied bgClass here for fallback
-              style={{ flex: "0 0 100%" }} // Explicit flex-basis
+              className={`embla__slide relative h-full min-w-0 ${slide.bgClass}`}
+              style={{ flex: "0 0 100%" }}
               key={slide.id}
             >
-              {/* Background Image & Dark Overlay */}
+              {/* Background Image with Overlay */}
               <div className="absolute inset-0 z-0">
                 <div className="absolute inset-0 bg-black/50 z-10"></div>
                 <img
                   src={slide.imgUrl}
-                  alt={slide.title || "Hero background image"}
+                  alt={`${slide.title}`}
                   className="absolute inset-0 w-full h-full object-cover object-center"
                   loading={index < 2 ? "eager" : "lazy"}
                 />
               </div>
 
-              {/* Slide Content Wrapper */}
+              {/* Slide Content */}
               <div
-                className={`relative z-20 h-full flex ${getLayoutClasses(
-                  slide.layout
-                )} p-6 md:p-10 lg:p-12`}
+                className={`relative z-20 h-full flex ${getLayoutClasses(slide.layout)} p-6 md:p-10 lg:p-12`}
               >
-                {/* Animated Content Block */}
                 <div
                   className={`w-full max-w-3xl text-white ${getContentTransitionClasses(
                     slide.layout,
@@ -282,34 +319,22 @@ export default function HeroCarousel() {
                   </h1>
                   <p
                     className={`text-lg md:text-xl mb-6 md:mb-8 text-white/90 leading-relaxed max-w-2xl 
-                                        ${
-                                          slide.layout === "left" ||
-                                          slide.layout === "right"
-                                            ? ""
-                                            : "mx-auto"
-                                        }`}
+                      ${slide.layout === "left" || slide.layout === "right" ? "" : "mx-auto"}`}
                   >
                     {slide.description}
                   </p>
-                  <div
-                    className={`flex flex-col sm:flex-row gap-4 
-                                        ${
-                                          slide.layout === "left"
-                                            ? "justify-start"
-                                            : slide.layout === "right"
-                                            ? "justify-end"
-                                            : "justify-center"
-                                        }`}
-                  >
+                  <div className={`flex flex-col sm:flex-row gap-4 ${getButtonAlignment(slide.layout)}`}>
                     <a
-                      href="#startups" // Replace with actual link or React Router <Link>
-                      className={`bg-white ${slide.buttonTextColor} hover:bg-opacity-90 font-semibold py-3 px-7 rounded-full shadow-xl hover:scale-105 transition-all duration-300 ease-in-out text-base md:text-lg`}
+                      href="#startups"
+                      className={`bg-white ${slide.buttonTextColor} hover:bg-opacity-90 font-semibold py-3 px-7 
+                        rounded-full shadow-xl hover:scale-105 transition-all duration-300 ease-in-out text-base md:text-lg`}
                     >
                       Explore Startups
                     </a>
                     <a
-                      href="/apply" // Replace with actual link or React Router <Link>
-                      className="border-2 border-white text-white hover:bg-white/10 font-semibold py-3 px-7 rounded-full shadow-lg hover:scale-105 transition-all duration-300 ease-in-out text-base md:text-lg"
+                      href="/apply"
+                      className="border-2 border-white text-white hover:bg-white/10 font-semibold py-3 px-7 
+                        rounded-full shadow-lg hover:scale-105 transition-all duration-300 ease-in-out text-base md:text-lg"
                     >
                       Apply Now
                     </a>
@@ -321,7 +346,7 @@ export default function HeroCarousel() {
         </div>
       </div>
 
-      {/* Navigation Buttons */}
+      {/* Navigation Controls */}
       <PrevButton onClick={scrollPrev} enabled={prevBtnEnabled} />
       <NextButton onClick={scrollNext} enabled={nextBtnEnabled} />
 

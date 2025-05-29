@@ -18,7 +18,7 @@ const getHighlightIcon = (title) => {
 };
 
 const TechnologyCard = ({ technology }) => {
-  const strapiBaseUrl = "http://localhost:1337"; // Define your Strapi base URL
+  const strapiBaseUrl = import.meta.env.VITE_API_URL; // Define your Strapi base URL
 
   const demonstrationImage =
     technology.Demonstration && technology.Demonstration.length > 0

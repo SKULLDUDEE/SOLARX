@@ -106,7 +106,8 @@ export default function ImpactMetrics({ companyId }) {
     const loadMetrics = async () => {
       try {
         setLoading(true);
-        const url = `http://localhost:1337/api/startups?filters[id][$eq]=${companyId}&populate[0]=Environmental_Impact_Metrics&populate[1]=Social_Impact_Metrics&populate[2]=Economic_Impact_Metrics&populate[3]=Technology_And_Scalability_Metrics`;
+        const baseUrl = import.meta.env.VITE_API_URL;
+        const url = `${baseUrl}/api/startups?filters[id][$eq]=${companyId}&populate[0]=Environmental_Impact_Metrics&populate[1]=Social_Impact_Metrics&populate[2]=Economic_Impact_Metrics&populate[3]=Technology_And_Scalability_Metrics`;
         const res = await axios.get(url);
         const startup = res.data.data[0];
 
@@ -144,14 +145,17 @@ export default function ImpactMetrics({ companyId }) {
   }, [companyId]);
 
   return (
-    <div className="max-w-screen-2xl mx-auto p-6 lg:p-0 my-20">
+    <div className="max-w-screen-2xl mx-[40px] p-6 lg:p-0 my-20">
       <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
-        <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
-        <h1 className="text-3xl md:text-5xl font-bold mb-1">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
-            Impact Metrics
-          </span>
-        </h1>
+      <div className="flex items-center ml-10">
+  <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+  <h1 className="text-3xl md:text-5xl font-bold mb-1 ml-4">
+    <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+      Impact Metrics
+    </span>
+  </h1>
+</div>
+
         <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
       </div>
 
@@ -167,15 +171,6 @@ export default function ImpactMetrics({ companyId }) {
         <>
           <KeyImpactMetricsScroller metrics={metrics} />
         </>
-        // <div className="overflow-x-auto hide-scrollbar">
-        //   <div className="flex space-x-8 px-1">
-        //     {Object.entries(CATEGORIES).map(([key, label]) => (
-        //       <div key={key} className="flex-shrink-0 w-max md:w-max">
-        //         <MetricsSection title={label} metrics={metrics[key]} />
-        //       </div>
-        //     ))}
-        // {/* //   </div>
-        // // </div> */}
       )}
     </div>
   );

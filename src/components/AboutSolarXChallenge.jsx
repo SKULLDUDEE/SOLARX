@@ -155,12 +155,7 @@ const AboutSolarXChallenge = () => {
           </div>
         </div>
 
-        {/* Scroll Down Indicator */}
-        <div className="flex justify-center mt-16">
-          <div className="animate-bounce">
-            <ChevronDown className="w-8 h-8 text-gray-400" />
-          </div>
-        </div>
+        
       </div>
     </section>
   );

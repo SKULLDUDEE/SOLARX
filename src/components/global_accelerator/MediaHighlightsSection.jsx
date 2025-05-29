@@ -13,9 +13,13 @@ const MediaHighlightsSection = () => {
     <section className="py-16 md:py-20 bg-gradient-to-tr from-gray-900 via-orange-900 to-orange-700 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
-            Media Highlights
-          </h2>
+        <h1
+          className="text-4xl md:text-5xl lg:text-6xl font-bold mb-10 md:mb-16 text-center text-white"
+          style={{ textShadow: "0 2px 5px rgba(0,0,0,0.6)" }}
+        >
+          Media Highlights
+        </h1>
+        <div className="w-1/4 h-1 mx-auto bg-white rounded-full mb-10 md:mb-16"></div>
           <p className="text-md md:text-lg max-w-2xl mx-auto">
             Highlighting the impact and recognition of the SolarX Global
             Accelerator program in prominent media outlets.

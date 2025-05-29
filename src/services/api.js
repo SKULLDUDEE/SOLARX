@@ -1,20 +1,41 @@
 import axios from 'axios';
 import { getApiId } from '../utils/strapiHelper';
 
-const API_URL = 'http://localhost:1337/api';
+// const API_URL = 'http://localhost:1337/api';
+export const API_URL = 'http://localhost:1337/api';
 
-// Company data
-export const fetchCompanyData = async () => {
-  try {
-    const response = await axios.get(`${API_URL}/startups?populate=*`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching company data:', error);
-    throw error;
-  }
-};
+// // Company data
+// export const fetchCompanyData = async () => {
+//   try {
+//     const response = await axios.get(`${API_URL}/startups?populate=*`);
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error fetching company data:', error);
+//     throw error;
+//   }
+// };
 
-// Companies data (for SolarXWinners)
+// // Companies data (for SolarXWinners)
+// export const fetchCompanies = async (filters = {}) => {
+//   try {
+//     // Build query parameters
+//     let queryParams = '?populate=*';
+    
+//     // Add region filter if provided
+//     if (filters.region && filters.region !== 'all') {
+//       queryParams += `&filters[Regions][$eq]=${filters.region}`;
+//     }
+    
+//     // Add sorting if needed
+//     queryParams += '&sort=createdAt:desc';
+    
+//     const response = await axios.get(`${API_URL}/startups${queryParams}`);
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error fetching companies data:', error);
+//     throw error;
+//   }
+// };
 export const fetchCompanies = async (filters = {}) => {
   try {
     // Build query parameters
@@ -26,7 +47,9 @@ export const fetchCompanies = async (filters = {}) => {
     }
     
     // Add sorting if needed
-    queryParams += '&sort=createdAt:desc';
+    if (filters.sort !== false) {
+      queryParams += '&sort=createdAt:desc';
+    }
     
     const response = await axios.get(`${API_URL}/startups${queryParams}`);
     return response.data;
@@ -35,6 +58,10 @@ export const fetchCompanies = async (filters = {}) => {
     throw error;
   }
 };
+
+// Use fetchCompanies() for basic fetch
+// Use fetchCompanies({ region: 'someRegion' }) for filtered fetch
+
 
 // Fetch a single company by ID with full details (for CompanyCard component)
 export const fetchCompanyById = async (id) => {

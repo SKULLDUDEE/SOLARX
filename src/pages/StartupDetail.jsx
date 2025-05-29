@@ -1,6 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-// import { getApiId } from '../utils/strapiHelper';
 import SolarXNavbar from '../components/SolarXNavbar';
 import SolarFlowHero from '../components/SolarFlowHero';
 import MentorCarousel from '../components/MentorCarousel';
@@ -9,10 +8,7 @@ import BusinessSummary from '../components/BusinessSummary';
 import TechnologySection from '../components/TechnologySection';
 import ImpactMetrics from '../components/ImpactMetrics';
 import FundingJourney from '../components/FundingJourney';
-// import ClimateImpactMetrics from '../components/ClimateImpactMetrics';
-// import SuccessStoriesSlider from '../components/SuccessStoriesSlider';
 import PressFeaturesSection from '../components/PressFeaturesSection';
-// import CompanyTimelineSection from '../components/CompanyTimelineSection';
 import ProjectGallery from '../components/ProjectGallery';
 import GlobalPresence from '../components/GlobalPresence';
 import Footer from '../components/Footer';
@@ -21,36 +17,15 @@ export default function StartupDetail() {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // console.log("StartupDetail - Company ID from URL:", id);
-  
-  // Log the ID to make sure it's being passed correctly
-  // useEffect(() => {
-  //   console.log("StartupDetail - Using company ID:", id);
-  // }, [id]);
-  
-  // Check if the company exists
+
   useEffect(() => {
     const checkCompany = async () => {
       if (id) {
         try {
           setLoading(true);
-          // console.log(`StartupDetail - Checking if company exists with ID: ${id}`);
           
-          // First get all companies to see what's available
-          // try {
-          //   const allCompaniesResponse = await fetch(`http://localhost:1337/api/startups`);
-          //   const allCompanies = await allCompaniesResponse.json();
-          //   // console.log("StartupDetail - All available companies:", allCompanies);
-            
-          //   if (allCompanies && allCompanies.data) {
-          //     // console.log(`StartupDetail - Available company IDs: ${allCompanies.data.map(c => c.id).join(', ')}`);
-          //   }
-          // } catch (listError) {
-          //   console.error("StartupDetail - Error fetching company list:", listError);
-          // }
-          
-          const response = await fetch(`http://localhost:1337/api/startups?filters[id][$eq]=${id}&populate=*`);
+          const baseUrl = import.meta.env.VITE_API_URL;
+          const response = await fetch(`${baseUrl}/api/startups?filters[id][$eq]=${id}&populate=*`);
           const data = await response.json();
           
           if (!(data && data.data && data.data.length > 0)) {
@@ -110,10 +85,8 @@ export default function StartupDetail() {
       <TechnologySection companyId={id} />
       <ImpactMetrics companyId={id} />
       <FundingJourney companyId={id} />
-      {/* <SuccessStoriesSlider companyId={id} /> */}
       <PressFeaturesSection companyId={id} />
       <ProjectGallery companyId={id} />
-      {/* <CompanyTimelineSection companyId={id} /> */}
       <GlobalPresence companyId={id} /> 
       
       <Footer />

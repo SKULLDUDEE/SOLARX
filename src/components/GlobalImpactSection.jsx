@@ -1,47 +1,18 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  Target,
-  BarChart3,
-  AlertTriangle,
-  Loader2,
-  Globe,
-} from "lucide-react";
-import KeyImpactMetricsScroller from "../components/KeyImpactMetricsScroller"; // Adjust path as needed
+import { Target, AlertTriangle, Loader2, Globe, BarChart3 } from "lucide-react";
+import KeyImpactMetricsScroller from "../components/KeyImpactMetricsScroller";
 
-// SDG Info - Remains the same
-const SDG_INFO = {
-  1: { title: "No Poverty", color: "bg-red-600", iconChar: "1" },
-  2: { title: "Zero Hunger", color: "bg-yellow-600", iconChar: "2" },
-  3: { title: "Good Health", color: "bg-green-500", iconChar: "3" },
-  4: { title: "Quality Education", color: "bg-blue-500", iconChar: "4" },
-  5: { title: "Gender Equality", color: "bg-pink-500", iconChar: "5" },
-  6: { title: "Clean Water", color: "bg-blue-400", iconChar: "6" },
-  7: {
-    title: "Affordable Clean Energy",
-    color: "bg-yellow-500",
-    iconChar: "7",
-  },
-  8: { title: "Decent Work", color: "bg-red-500", iconChar: "8" },
-  9: { title: "Industry, Innovation", color: "bg-indigo-500", iconChar: "9" },
-  10: { title: "Reduced Inequality", color: "bg-pink-400", iconChar: "10" },
-  11: { title: "Sustainable Cities", color: "bg-orange-500", iconChar: "11" },
-  12: {
-    title: "Responsible Consumption",
-    color: "bg-yellow-700",
-    iconChar: "12",
-  },
-  13: { title: "Climate Action", color: "bg-green-600", iconChar: "13" },
-  14: { title: "Life Below Water", color: "bg-blue-600", iconChar: "14" },
-  15: { title: "Life on Land", color: "bg-green-700", iconChar: "15" },
-  16: { title: "Peace & Justice", color: "bg-gray-700", iconChar: "16" },
-  17: { title: "Partnerships", color: "bg-blue-800", iconChar: "17" },
-};
-
-// Original shuffleArray function - Remains the same
+/**
+ * Shuffles array elements randomly
+ * @param {Array} arr - Array to shuffle
+ * @returns {Array} - New shuffled array
+ */
 const shuffleArray = (arr) => [...arr].sort(() => 0.5 - Math.random());
 
-// Component to display an SDG Goal - Remains the same
+/**
+ * Component to display an SDG Goal
+ */
 const SdgGoalDisplay = ({ number, title, color, iconChar }) => (
   <div
     className={`group flex items-center space-x-2.5 px-3.5 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-default ${color} text-white transform hover:scale-105 min-w-[170px]`}
@@ -56,22 +27,24 @@ const SdgGoalDisplay = ({ number, title, color, iconChar }) => (
   </div>
 );
 
+/**
+ * Global Impact Section Component
+ * Displays SDG alignment, regional impact, and key metrics
+ */
 const GlobalImpactSection = () => {
   const [sdgData, setSdgData] = useState([]);
-  const [impactMetrics, setImpactMetrics] = useState([]); // This will be passed to the new component
+  const [impactMetrics, setImpactMetrics] = useState([]);
   const [regionalImpactData, setRegionalImpactData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  // useEffect for isVisible remains the same
+  // Animation effect for component visibility
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  // REGION_COLORS, REGIONS_OF_INTEREST, and useEffect for fetchData remain largely the same.
-  // The key is that `setImpactMetrics(selectedMetrics)` populates the state.
   // Define colors for the regional list
   const REGION_COLORS = {
     "Asia-Pacific": "bg-sky-500",
@@ -83,45 +56,120 @@ const GlobalImpactSection = () => {
   const REGIONS_OF_INTEREST = ["Asia-Pacific", "LAC", "MENA", "Africa"];
 
   useEffect(() => {
+    /**
+     * Fetches SDG, impact metrics, and regional data from the API
+     */
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const [sdgRes, fullRes] = await Promise.all([
-          axios.get("http://localhost:1337/api/startups?fields=SDG"),
-          axios.get("http://localhost:1337/api/startups?populate=*"),
-        ]);
+        // Define SDG colors based on number
+        const sdgColors = {
+          1: "bg-red-600",
+          2: "bg-yellow-600",
+          3: "bg-green-500",
+          4: "bg-blue-500",
+          5: "bg-pink-500",
+          6: "bg-blue-400",
+          7: "bg-yellow-500",
+          8: "bg-red-500",
+          9: "bg-indigo-500",
+          10: "bg-pink-400",
+          11: "bg-orange-500",
+          12: "bg-yellow-700",
+          13: "bg-green-600",
+          14: "bg-blue-600",
+          15: "bg-green-700",
+          16: "bg-gray-700",
+          17: "bg-blue-800",
+        };
 
-        const sdgsRaw = sdgRes?.data?.data?.[0]?.SDG || [];
-        const mappedSdgs = sdgsRaw.map((number) => ({
-          number,
-          title: SDG_INFO[number]?.title || `SDG ${number}`,
-          color: SDG_INFO[number]?.color || "bg-gray-500",
-          iconChar: SDG_INFO[number]?.iconChar || String(number),
-        }));
+        // Fetch startup data first
+        const baseUrl = import.meta.env.VITE_API_URL;
+        const fullRes = await axios.get(
+          `${baseUrl}/api/startups?populate=*`,
+        );
+
+        // Get the SDG numbers from the startup data
+        const startupSdgNumbers = fullRes?.data?.data?.[0]?.SDG || [];
+
+        // Create a new endpoint in Strapi to fetch SDG data
+        // For now, we'll use the data from the startup's SDG field
+        // and create a mapping function to extract the titles
+        
+        // This function extracts the SDG title from the format "Title:Number"
+        const extractSdgInfo = (sdgNumber) => {
+          // Try to find the SDG in the startup's attributes
+          const sdgAttributes = fullRes?.data?.data?.[0]?.attributes || {};
+          
+          // Look for a field that might contain SDG information
+          for (const key in sdgAttributes) {
+            if (key.toLowerCase().includes('sdg') && Array.isArray(sdgAttributes[key])) {
+              // Check each SDG entry
+              for (const sdgEntry of sdgAttributes[key]) {
+                // If it's a string with the format "Title:Number"
+                if (typeof sdgEntry === 'string' && sdgEntry.includes(':')) {
+                  const [title, number] = sdgEntry.split(':').map(s => s.trim());
+                  if (number == sdgNumber) {
+                    return title;
+                  }
+                }
+              }
+            }
+          }
+          
+          // Fallback mapping if we can't find the SDG in the attributes
+          const fallbackTitles = {
+            1: "No Poverty",
+            2: "Zero Hunger",
+            3: "Good Health And Well Being",
+            4: "Quality Education",
+            5: "Gender Equality",
+            6: "Clean Water And Sanitation",
+            7: "Affordable And Clean Energy",
+            8: "Decent Work and Economic Growth",
+            9: "Industry, Innovation And Infrastructure",
+            10: "Reduced Inequalities",
+            11: "Sustainable Cities And Communities",
+            12: "Responsible Consumption And Production",
+            13: "Climate Action",
+            14: "Life Below Water",
+            15: "Life On Land",
+            16: "Peace, Justice And Strong Institutions",
+            17: "Partnerships For The Goals",
+          };
+          
+          return fallbackTitles[sdgNumber] || `SDG ${sdgNumber}`;
+        };
+
+        // Map the SDGs that are associated with the startup
+        const mappedSdgs = startupSdgNumbers.map((number) => {
+          return {
+            number,
+            title: extractSdgInfo(number),
+            color: sdgColors[number] || "bg-gray-500",
+            iconChar: String(number),
+          };
+        });
+
         setSdgData(mappedSdgs);
 
+        // Process impact metrics
         const firstStartupForMetrics = fullRes?.data?.data?.[0] || {};
-        // --- IMPORTANT: ENSURE YOU HAVE ENOUGH METRICS FOR A GOOD SCROLL ---
-        // If you slice to 5, and they are narrow, the scroll might look short.
-        // Consider taking more, or ensuring your sample data has more if this is for testing.
         const allMetricsRaw = [
           ...(firstStartupForMetrics.Environmental_Impact_Metrics || []),
           ...(firstStartupForMetrics.Social_Impact_Metrics || []),
           ...(firstStartupForMetrics.Economic_Impact_Metrics || []),
           ...(firstStartupForMetrics.Technology_And_Scalability_Metrics || []),
         ];
-        // For a good scroll, you want more items. Let's shuffle and take up to 10 for example.
-        // Or, if 'allMetricsRaw' usually has enough, just use that.
+
         const selectedMetrics = shuffleArray(allMetricsRaw)
-          .slice(0, Math.min(10, allMetricsRaw.length)) // Take up to 10, or fewer if not available
+          .slice(0, Math.min(10, allMetricsRaw.length))
           .map((metric) => ({
             label: metric.Title || "Untitled Metric",
             value: metric.Metric || "N/A",
           }));
-        // If you have very few metrics (e.g., < 4), the duplication might be very obvious.
-        // Consider a fallback or different display if metrics.length is too small for a scroller.
         setImpactMetrics(selectedMetrics);
 
         if (fullRes?.data?.data && Array.isArray(fullRes.data.data)) {
@@ -145,7 +193,7 @@ const GlobalImpactSection = () => {
             }))
             .sort((a, b) => b.count - a.count);
           setRegionalImpactData(
-            processedRegionalData.length > 0 ? processedRegionalData : null
+            processedRegionalData.length > 0 ? processedRegionalData : null,
           );
         } else {
           setRegionalImpactData(null);
@@ -289,38 +337,32 @@ const GlobalImpactSection = () => {
                   <p className="text-gray-600 mb-6 text-sm">
                     Distribution of startups across key operational regions:
                   </p>
-                  {regionalImpactData && regionalImpactData.length > 0 ? (
-                    <ul className="space-y-3">
-                      {regionalImpactData.map((regionData, index) => (
-                        <li
-                          key={index}
-                          className={`flex items-center justify-between p-3.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 border border-transparent hover:border-gray-200
+                  <ul className="space-y-3">
+                    {regionalImpactData.map((regionData, index) => (
+                      <li
+                        key={index}
+                        className={`flex items-center justify-between p-3.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 border border-transparent hover:border-gray-200
                                             ${
                                               index % 2 === 0
                                                 ? "bg-gray-50"
                                                 : "bg-white"
                                             }`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <span
-                              className={`flex-shrink-0 w-4 h-4 rounded-full ${regionData.color} ring-2 ring-offset-1 ring-white/50`}
-                            ></span>
-                            <span className="text-sm font-medium text-gray-700">
-                              {regionData.name}
-                            </span>
-                          </div>
-                          <span className="text-sm font-semibold text-gray-800 bg-gray-100 px-2.5 py-0.5 rounded-full">
-                            {regionData.count} startup
-                            {regionData.count !== 1 ? "s" : ""}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <span
+                            className={`flex-shrink-0 w-4 h-4 rounded-full ${regionData.color} ring-2 ring-offset-1 ring-white/50`}
+                          ></span>
+                          <span className="text-sm font-medium text-gray-700">
+                            {regionData.name}
                           </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-500 text-sm text-center py-8">
-                      Regional distribution data is currently being compiled.
-                    </p>
-                  )}
+                        </div>
+                        <span className="text-sm font-semibold text-gray-800 bg-gray-100 px-2.5 py-0.5 rounded-full">
+                          {regionData.count} startup
+                          {regionData.count !== 1 ? "s" : ""}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
               {/* Placeholder if no regional data but other data exists and not loading */}
@@ -350,34 +392,13 @@ const GlobalImpactSection = () => {
           </div>
         </div>
 
-        <KeyImpactMetricsScroller
-          metrics={[...impactMetrics, ...impactMetrics]}
-          isVisible={isVisible}
-        />
+        {impactMetrics.length > 0 && (
+          <KeyImpactMetricsScroller
+            metrics={impactMetrics}
+            isVisible={isVisible}
+          />
+        )}
       </div>
-      <style jsx>{`
-        .animation-delay-100 {
-          animation-delay: 0.1s;
-        }
-        .animation-delay-200 {
-          animation-delay: 0.2s;
-        }
-        .animation-delay-300 {
-          animation-delay: 0.3s;
-        }
-        .animation-delay-400 {
-          animation-delay: 0.4s;
-        }
-        .animation-delay-500 {
-          animation-delay: 0.5s;
-        }
-        .group:hover .group-hover\\:text-clip {
-          text-overflow: clip;
-        }
-        .group:hover .group-hover\\:whitespace-normal {
-          white-space: normal;
-        }
-      `}</style>
     </section>
   );
 };

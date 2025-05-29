@@ -119,7 +119,10 @@ export default function SuccessStories() {
   }, [currentSlide, visibleCards, stories, showSlider, totalItems]);
 
   return (
-    <section id="success-stories" className="min-h-screen bg-gradient-to-b from-white via-orange-50 to-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+    <section
+      id="success-stories"
+      className="min-h-screen bg-gradient-to-b from-white via-orange-50 to-white py-16 sm:py-24 px-6 sm:px-10 lg:px-16"
+    >
       <div className="max-w-screen-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12 md:mb-16">

@@ -125,14 +125,29 @@ const transformedTimelineEvents = webinarSeriesData.sessions.map(
     //   "Thurs, July 17 (10:00-11:30 PM IST)",
     //   "Thurs, July 24 (10:00-11:30 PM IST)",
     // ],
-    const da = `${session.date[0].split("(")[0].trim()} & ${session.date[1]
-      .split("(")[0]
-      .trim()}`; // Use the first date for the timeline event
+    // Extract month and year from the date string, removing the day
+    const firstDate = session.date[0].split("(")[0].trim();
+    const secondDate = session.date[1].split("(")[0].trim();
+    
+    // Extract just month and year from dates
+    const getMonthYear = (dateStr) => {
+      const parts = dateStr.split(", ");
+      if (parts.length > 1) {
+        // Remove the day part (e.g., "Fri" from "Fri, Mar 14")
+        return parts[1];
+      }
+      return dateStr;
+    };
+    
+    const monthYear1 = getMonthYear(firstDate);
+    const monthYear2 = getMonthYear(secondDate);
+    
+    const da = `${monthYear1} & ${monthYear2}`;
 
     return {
       img: imagePool[index % imagePool.length],
       // For the timeline slide 'date' field, use the session's full date string
-      date: `${isUpcoming ? "Upcoming: " : ""}${da}`, // E.g., "Upcoming: Fri, Mar 14"
+      date: `${da}`, // E.g., "Mar 14 & Mar 18"
       title: session.topic, // The topic of the webinar session is the title of the timeline event
       description: descriptionContent,
       isUpcoming: isUpcoming,
@@ -291,36 +306,62 @@ const TimelineSection = () => {
                   className="flex flex-row justify-center items-center w-screen flex-shrink-0 h-full box-border px-6 sm:px-12 md:px-20 lg:px-24" // timeline-event
                   key={event.key || event.title} // Use the key property or fallback
                 >
-                  <img
-                    src={event.img}
-                    alt={event.title}
-                    className="w-[450px] max-w-[40%] xl:max-w-[35%] h-[80vh] max-h-[600px] object-cover object-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.35)] rounded-2xl mr-8 xl:mr-12 border-2 border-white/10 transition-all duration-400 ease-[cubic-bezier(0.25,0.8,0.25,1)] hover:scale-[1.03] hover:-translate-y-1 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.45)]"
-                  />
+                  <div className="relative">
+                    {event.isUpcoming && (
+                      <div className="absolute top-5 right-40 transform -translate-x-1/2 bg-gradient-to-r from-red-600 to-orange-500 text-white text-xs font-bold py-1 px-4 rounded-md shadow-lg z-10" 
+                           style={{
+                             animation: 'pulse-banner 1.5s infinite',
+                             fontSize: '11px',
+                           }}>
+                        UPCOMING
+                      </div>
+                    )}
+                    <img
+                      src={event.img}
+                      alt={event.title}
+                      className="w-[650px] max-w-[70%] xl:max-w-[70%] h-[80vh] max-h-[600px] object-cover object-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.35)] rounded-2xl mr-8 xl:mr-12 border-2 border-white/10 transition-all duration-400 ease-[cubic-bezier(0.25,0.8,0.25,1)] hover:scale-[1.03] hover:-translate-y-1 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.45)]"
+                    />
+                    <style jsx>{`
+                      @keyframes pulse-banner {
+                        0% {
+                          opacity: 1;
+                          transform: translateX(-50%) scale(1);
+                          box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+                        }
+                        50% {
+                          opacity: 0.8;
+                          transform: translateX(-50%) scale(1.05);
+                          box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
+                        }
+                        100% {
+                          opacity: 1;
+                          transform: translateX(-50%) scale(1);
+                          box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+                        }
+                      }
+                    `}</style>
+                  </div>
                   <div className="w-full md:w-[55%] xl:w-[60%] max-w-[650px] flex flex-col justify-center items-start md:pl-4">
                     <div className="flex flex-col items-start mb-6 relative">
                       <h2
-                        className={`text-3xl lg:text-4xl font-bold pb-2.5 relative mb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-[60px] after:h-[3px] after:rounded-sm ${
-                          event.isUpcoming
-                            ? "text-amber-400 after:bg-amber-400"
-                            : "text-white after:bg-orange-500"
-                        }`}
+                        className="text-5xl lg:text-6xl font-bold pb-2.5 relative mb-2 text-white after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-[60px] after:h-[3px] after:rounded-sm after:bg-orange-500"
                       >
                         {event.title}
                       </h2>
                       <h3
-                        className={`text-xl lg:text-xl font-semibold tracking-wide leading-tight ${
-                          event.isUpcoming ? "text-amber-200" : "text-gray-100"
-                        }`}
+                        className="text-3xl lg:text-3xl font-semibold tracking-wide leading-tight text-white"
                       >
                         <div // description
-                          className="w-full max-h-[40vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-slate-700/50 pr-2 [&_ul]:list-outside [&_ul]:mt-3 [&_ul]:pl-5 [&_li]:mb-1.5 [&_li]:text-slate-300"
+                          className="w-full max-h-[40vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-slate-700/50 pr-2 [&_ul]:list-outside [&_ul]:mt-3 [&_ul]:pl-5 [&_li]:mb-1.5 [&_li]:text-white [&_strong]:text-white"
                           dangerouslySetInnerHTML={{
                             __html: event.description,
                           }}
                         ></div>
                       </h3>
                     </div>
-                    {event.date}
+                    <div className="text-3xl text-white font-medium">
+                      {event.date}
+                    </div>
                   </div>
                 </div>
               )

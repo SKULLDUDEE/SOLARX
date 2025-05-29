@@ -1,18 +1,14 @@
 import { useState, useEffect } from "react";
 import { getLocationFromLatLong } from "../utils/strapiHelper";
 import {
-  Building,
   Calendar,
   MapPin,
-  DollarSign,
   Users,
   Shield,
   Target,
-  ArrowLeft,
   Globe,
 } from "lucide-react";
-// import { fetchCompanyWithRelationships } from '../services/api';
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 export default function CompanyInformation({ companyId }) {
   // If companyId is not passed as prop, try to get it from URL params
@@ -22,40 +18,15 @@ export default function CompanyInformation({ companyId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Function to manually parse rich text content
-  const parseRichText = (content) => {
-    if (!content) return "";
-
-    // If it's a string, return it directly
-    if (typeof content === "string") return content;
-
-    // If it's an array (Strapi rich text format)
-    if (Array.isArray(content)) {
-      return content
-        .map((block) => {
-          if (block.children && Array.isArray(block.children)) {
-            return block.children.map((child) => child.text || "").join("");
-          }
-          return "";
-        })
-        .join("\n");
-    }
-
-    // If we can't parse it, return empty string
-    return "";
-  };
-
   useEffect(() => {
     const fetchCompanyDetails = async () => {
       try {
         setLoading(true);
-        // console.log('CompanyInformation - Fetching company details for ID:', id);
 
         // Get all companies first
-        const response = await fetch(`http://localhost:1337/api/startups`);
+        const baseUrl = import.meta.env.VITE_API_URL;
+        const response = await fetch(`${baseUrl}/api/startups`);
         const result = await response.json();
-
-        // console.log("CompanyInformation - All companies response:", result);
 
         // Find the company with the matching ID
         const companyData = result.data.find(
@@ -63,18 +34,11 @@ export default function CompanyInformation({ companyId }) {
         );
 
         if (companyData) {
-          // console.log("CompanyInformation - Found company:", companyData);
-
-          // Parse the introduction manually
-          const parsedIntro = parseRichText(companyData.introduction);
-          // console.log("CompanyInformation - Parsed introduction:", parsedIntro);
-
           // Create a clean company object
           const cleanCompany = {
             id: companyData.id,
             Name: companyData.Name || "Unnamed Company",
             introduction: companyData.Description[0].children[0].text || "",
-            // parsedIntroduction: parsedIntro,
             Website: companyData.Website_URL || "",
             ContactEmail: companyData.Contact_Email || "",
             FoundingYear: companyData.Founding_Year || "",
@@ -87,17 +51,11 @@ export default function CompanyInformation({ companyId }) {
             sdgs: companyData.SDG,
           };
 
-          // console.log('CompanyInformation - Clean company data:', cleanCompany);
           setCompany(cleanCompany);
         } else {
-          console.warn("CompanyInformation - Company not found with ID:", id);
           setError("Company data not found");
         }
       } catch (err) {
-        console.error(
-          "CompanyInformation - Error fetching company details:",
-          err
-        );
         setError("Failed to load company details. Please try again later.");
       } finally {
         setLoading(false);
@@ -109,7 +67,7 @@ export default function CompanyInformation({ companyId }) {
     }
   }, [id]);
   return (
-    <div className="p-6 font-sans max-w-screen-2xl mx-auto my-20">
+    <div className="p-[80px] font-sans max-w-screen-2xl mx-auto my-20">
       {loading && (
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
@@ -241,10 +199,8 @@ export default function CompanyInformation({ companyId }) {
               </div>
             </div>
 
-            {/* Company Description section removed as requested */}
-
             {/* Company Milestones */}
-            {company.milestones &&
+            {/* {company.milestones &&
               company.milestones.data &&
               company.milestones.data.length > 0 && (
                 <div className="mt-8 border border-gray-200 rounded-lg p-6">
@@ -269,7 +225,7 @@ export default function CompanyInformation({ companyId }) {
                     ))}
                   </div>
                 </div>
-              )}
+              )} */}
           </div>
         </div>
       )}

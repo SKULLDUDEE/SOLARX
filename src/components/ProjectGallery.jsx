@@ -49,7 +49,8 @@ const ProjectGallery = ({ companyId }) => {
         setLoading(true);
         setError(null);
 
-        const apiUrl = `http://localhost:1337/api/projects?filters[startup][id][$eq]=${companyId}&populate[0]=Banner_Image&populate[1]=startup`;
+        const baseUrl = import.meta.env.VITE_API_URL;
+        const apiUrl = `${baseUrl}/api/projects?filters[startup][id][$eq]=${companyId}&populate[0]=Banner_Image&populate[1]=startup`;
         // console.log('Fetching projects from:', apiUrl);
         const response = await fetch(apiUrl);
 
@@ -77,7 +78,7 @@ const ProjectGallery = ({ companyId }) => {
               const img = apiProject.Banner_Image;
               const rawUrl =
                 img.formats?.medium?.url || img.formats?.small?.url || img.url;
-              imageUrl = rawUrl ? `http://localhost:1337${rawUrl}` : null;
+              imageUrl = rawUrl ? `${import.meta.env.VITE_API_URL}${rawUrl}` : null;
               imageAlt = img.alternativeText || img.name || imageAlt;
             }
 
@@ -176,159 +177,160 @@ const ProjectGallery = ({ companyId }) => {
   };
 
   return (
-    <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
-        <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
-        <h1 className="text-3xl md:text-5xl font-bold mb-1">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
-            Project Gallery
-          </span>
-        </h1>
-        <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+    <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 ml-10">
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
+      <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+      <h1 className="text-3xl md:text-5xl font-bold mb-1 text-left">
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
+          Project Gallery
+        </span>
+      </h1>
+      <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+    </div>
+
+    {loading && (
+      <div className="flex flex-col justify-start items-start py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+        <p className="mt-4 text-gray-700">Loading projects...</p>
       </div>
+    )}
 
-      {loading && (
-        <div className="flex flex-col justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
-          <p className="mt-4 text-gray-700">Loading projects...</p>
-        </div>
-      )}
+    {error && !loading && (
+      <div
+        className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative max-w-2xl mb-8"
+        role="alert"
+      >
+        <strong className="font-bold">Error! </strong>
+        <span className="block sm:inline">{error}</span>
+      </div>
+    )}
 
-      {error && !loading && (
+    {!loading && !error && projects.length === 0 && renderFallbackContent()}
+
+    {!loading && !error && projects.length > 0 && (
+      <div className="relative">
+        {showSlider && (
+          <>
+            <button
+              onClick={goToPrevious}
+              disabled={currentIndex === 0}
+              className={`absolute left-0 top-1/2 transform -translate-y-1/2 -ml-3 sm:-ml-5 z-20 p-2 rounded-full shadow-lg transition-all duration-200 ${
+                currentIndex === 0
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-50"
+                  : "bg-white text-gray-700 hover:bg-orange-500 hover:text-white hover:shadow-xl"
+              }`}
+              aria-label="Previous projects"
+            >
+              <ChevronLeft size={28} />
+            </button>
+
+            <button
+              onClick={goToNext}
+              disabled={currentIndex >= maxIndex}
+              className={`absolute right-0 top-1/2 transform -translate-y-1/2 -mr-3 sm:-mr-5 z-20 p-2 rounded-full shadow-lg transition-all duration-200 ${
+                currentIndex >= maxIndex
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-50"
+                  : "bg-white text-gray-700 hover:bg-orange-500 hover:text-white hover:shadow-xl"
+              }`}
+              aria-label="Next projects"
+            >
+              <ChevronRight size={28} />
+            </button>
+          </>
+        )}
+
         <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative max-w-2xl mx-auto mb-8"
-          role="alert"
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-start ${
+            effectiveItemsPerView === 2 ? "lg:grid-cols-2" : ""
+          } ${
+            effectiveItemsPerView === 1 ? "md:grid-cols-1 lg:grid-cols-1" : ""
+          }`}
         >
-          <strong className="font-bold">Error! </strong>
-          <span className="block sm:inline">{error}</span>
-        </div>
-      )}
-
-      {!loading && !error && projects.length === 0 && renderFallbackContent()}
-
-      {!loading && !error && projects.length > 0 && (
-        <div className="relative">
-          {showSlider && (
-            <>
-              <button
-                onClick={goToPrevious}
-                disabled={currentIndex === 0}
-                className={`absolute left-0 top-1/2 transform -translate-y-1/2 -ml-3 sm:-ml-5 z-20 p-2 rounded-full shadow-lg transition-all duration-200 ${
-                  currentIndex === 0
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-50"
-                    : "bg-white text-gray-700 hover:bg-orange-500 hover:text-white hover:shadow-xl"
-                }`}
-                aria-label="Previous projects"
-              >
-                <ChevronLeft size={28} />
-              </button>
-
-              <button
-                onClick={goToNext}
-                disabled={currentIndex >= maxIndex}
-                className={`absolute right-0 top-1/2 transform -translate-y-1/2 -mr-3 sm:-mr-5 z-20 p-2 rounded-full shadow-lg transition-all duration-200 ${
-                  currentIndex >= maxIndex
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-50"
-                    : "bg-white text-gray-700 hover:bg-orange-500 hover:text-white hover:shadow-xl"
-                }`}
-                aria-label="Next projects"
-              >
-                <ChevronRight size={28} />
-              </button>
-            </>
-          )}
-
-          <div
-            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${
-              effectiveItemsPerView === 2 ? "lg:grid-cols-2" : ""
-            } ${
-              effectiveItemsPerView === 1 ? "md:grid-cols-1 lg:grid-cols-1" : ""
-            }`}
-          >
-            {visibleProjects.map((project) => (
-              <div
-                key={project.id}
-                className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col group"
-              >
-                <div className="relative h-56 sm:h-64 overflow-hidden">
-                  {project.image ? (
-                    <img
-                      src={project.image.url}
-                      alt={project.image.alt}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                      <FileText size={48} className="text-white opacity-50" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4">
-                    <h3 className="text-xl font-bold text-white">
-                      {project.name}
-                    </h3>
-                    {project.oneLiner && (
-                      <p className="text-sm text-orange-200 mt-1 truncate">
-                        {project.oneLiner}
-                      </p>
-                    )}
+          {visibleProjects.map((project) => (
+            <div
+              key={project.id}
+              className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col group w-full"
+            >
+              <div className="relative h-56 sm:h-64 overflow-hidden">
+                {project.image ? (
+                  <img
+                    src={project.image.url}
+                    alt={project.image.alt}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+                    <FileText size={48} className="text-white opacity-50" />
                   </div>
-                </div>
-
-                <div className="p-5 flex-grow flex flex-col">
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-4 flex-grow">
-                    {project.description}
-                  </p>
-
-                  {project.externalUrl && (
-                    <div className="mt-auto pt-4 border-t border-gray-200">
-                      <a
-                        href={project.externalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium text-sm hover:underline transition-colors duration-200 group/link"
-                      >
-                        Learn More
-                        <ExternalLink
-                          size={16}
-                          className="ml-1.5 transform transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
-                        />
-                      </a>
-                    </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4">
+                  <h3 className="text-xl font-bold text-white text-left">
+                    {project.name}
+                  </h3>
+                  {project.oneLiner && (
+                    <p className="text-sm text-orange-200 mt-1 truncate text-left">
+                      {project.oneLiner}
+                    </p>
                   )}
                 </div>
               </div>
+
+              <div className="p-5 flex-grow flex flex-col text-left">
+                <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-4 flex-grow text-left">
+                  {project.description}
+                </p>
+
+                {project.externalUrl && (
+                  <div className="mt-auto pt-4 border-t border-gray-200 text-left">
+                    <a
+                      href={project.externalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium text-sm hover:underline transition-colors duration-200 group/link"
+                    >
+                      Learn More
+                      <ExternalLink
+                        size={16}
+                        className="ml-1.5 transform transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
+                      />
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {showSlider && totalItems > effectiveItemsPerView && (
+          <div className="flex justify-start mt-8 space-x-2">
+            {Array.from({
+              length: Math.ceil(totalItems / 1) - effectiveItemsPerView + 1,
+            }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)} // Each dot represents a starting index for a "view"
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ease-in-out transform hover:scale-125 ${
+                  index === currentIndex
+                    ? "bg-orange-500 scale-125"
+                    : "bg-gray-300 hover:bg-gray-400"
+                }`}
+                aria-label={`Go to project set ${index + 1}`}
+              />
             ))}
           </div>
+        )}
+      </div>
+    )}
+    <style jsx>{`
+      .line-clamp-4 {
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    `}</style>
+  </div>
 
-          {showSlider && totalItems > effectiveItemsPerView && (
-            <div className="flex justify-center mt-8 space-x-2">
-              {Array.from({
-                length: Math.ceil(totalItems / 1) - effectiveItemsPerView + 1,
-              }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index)} // Each dot represents a starting index for a "view"
-                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ease-in-out transform hover:scale-125 ${
-                    index === currentIndex
-                      ? "bg-orange-500 scale-125"
-                      : "bg-gray-300 hover:bg-gray-400"
-                  }`}
-                  aria-label={`Go to project set ${index + 1}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      <style jsx>{`
-        .line-clamp-4 {
-          display: -webkit-box;
-          -webkit-line-clamp: 4;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
-    </div>
   );
 };
 

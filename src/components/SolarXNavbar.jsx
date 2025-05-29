@@ -56,8 +56,8 @@ export default function SolarXNavbar() {
       />
 
       {/* Desktop Navigation */}
-      <nav className="hidden lg:block">
-        <ul className="flex space-x-6">
+      <nav className="hidden lg:block ">
+        <ul className="flex space-x-6 ">
           {navItems.map((item) => (
             <li key={item.label} className="relative group">
               <a href={item.href} className="text-stone-50 font-medium text-lg">

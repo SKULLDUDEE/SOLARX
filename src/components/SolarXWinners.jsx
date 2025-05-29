@@ -4,13 +4,13 @@ import CompanyCard from "./CompanyCard";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import "./SliderStyles.css"; // Your custom slider styles
+import "./SliderStyles.css"; 
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   Loader2,
   AlertTriangle,
-} from "lucide-react"; // Example icons
+} from "lucide-react";
 
 const REGIONS_OPTIONS = [
   "All Regions",
@@ -22,7 +22,7 @@ const REGIONS_OPTIONS = [
 
 export default function SolarXWinners() {
   const sliderRef = useRef(null);
-  const [allCompaniesRaw, setAllCompaniesRaw] = useState(null); // Store raw API response
+  const [allCompaniesRaw, setAllCompaniesRaw] = useState(null); 
   const [processedCompanies, setProcessedCompanies] = useState([]); // Store companies with id and regions
   const [selectedRegion, setSelectedRegion] = useState(REGIONS_OPTIONS[0]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,6 @@ export default function SolarXWinners() {
         const response = await fetchCompanies(); // Fetches all companies
 
         if (response && response.data) {
-          // console.log('API Response for SolarXWinners:', response);
           setAllCompaniesRaw(response.data); // Assuming response.data is the array of companies
         } else {
           console.warn(

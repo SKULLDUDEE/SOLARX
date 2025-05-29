@@ -20,7 +20,8 @@ export default function PressFeaturesSection({ companyId }) {
         setLoading(true);
         setError(null);
 
-        const apiUrl = `http://localhost:1337/api/startups?filters[id][$eq]=${companyId}&populate=Media`;
+        const baseUrl = import.meta.env.VITE_API_URL;
+        const apiUrl = `${baseUrl}/api/startups?filters[id][$eq]=${companyId}&populate=Media`;
         const response = await fetch(apiUrl);
 
         if (!response.ok) {
@@ -115,15 +116,14 @@ export default function PressFeaturesSection({ companyId }) {
   return (
     <div className="max-w-screen-2xl mx-auto px-6 sm:px-10 py-16 bg-white">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
-        <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
-        <h1 className="text-3xl md:text-5xl font-bold mb-1">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
-            Media Coverage
-          </span>
-        </h1>
-        <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
-      </div>
+      <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full ml-[30px]">
+  <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+  <h1 className="text-4xl md:text-5xl font-bold mb-1">
+    <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">Media Coverage</span>
+  </h1>
+  <div className="block md:hidden w-1/3 md:w-16 h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+</div>
+
 
       {/* Loading State */}
       {loading && (

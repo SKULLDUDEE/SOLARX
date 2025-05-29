@@ -21,7 +21,9 @@ export default function BusinessSummary({ companyId }) {
 
       setLoading(true);
       try {
-        const url = `http://localhost:1337/api/startups?filters[id][$eq]=${companyId}&populate[0]=Business_Summary&populate[1]=Business_Summary.USP`;
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const apiPath = import.meta.env.VITE_CMS_API_PATH || "/api";
+        const url = `${apiUrl}${apiPath}/startups?filters[id][$eq]=${companyId}&populate[0]=Business_Summary&populate[1]=Business_Summary.USP`;
         const response = await fetch(url);
         const result = await response.json();
 
@@ -65,7 +67,7 @@ export default function BusinessSummary({ companyId }) {
   }, [companyId]);
 
   return (
-    <div className="max-w-screen-2xl mx-auto p-6 lg:p-0 my-20">
+    <div className="max-w-screen-2xl mx-[69px]  lg:p-0 my-20">
       <div className="flex flex-col md:flex-row items-center justify-between md:justify-start mb-8 space-y-3 md:space-y-0 md:space-x-3 w-full">
         <div className="w-1/5 md:w-16 hidden md:block h-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
         <h1 className="text-3xl md:text-5xl font-bold mb-1">
@@ -130,7 +132,7 @@ export default function BusinessSummary({ companyId }) {
             </p>
             <div className="flex justify-center">
               <a
-                href="http://localhost:1337/admin/content-manager/collectionType/api::business-summary.business-summary/create"
+                href={`${import.meta.env.VITE_API_URL}/admin/content-manager/collectionType/api::business-summary.business-summary/create`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md transition-colors duration-300"
