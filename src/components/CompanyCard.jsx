@@ -142,11 +142,11 @@ export default function CompanyCard({ companyId, regionClass }) {
       className="flex flex-col h-full bg-white rounded-xl max-w-xl sm:rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out group"
     >
       <div className="relative overflow-hidden image-container h-40 sm:h-48">
-        {company.coverImage?.url ? (
+        {company.logo?.url ? (
           <img
             src={
-              company.coverImage.url.startsWith("http")
-                ? company.coverImage.url
+              company.logo.url.startsWith("http")
+                ? company.logo.url
                 : `${import.meta.env.VITE_API_URL}${company.coverImage.url}`
             }
             alt={company.name}

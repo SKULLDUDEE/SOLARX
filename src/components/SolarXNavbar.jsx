@@ -49,11 +49,19 @@ export default function SolarXNavbar() {
 
   return (
     <header className="fixed top-0 left-0 bg-orange-600 px-6 flex justify-between items-center w-full shadow-sm transition-all duration-300 z-[1000]">
-      <img
-        src={logo}
-        alt="International Solar Alliance Logo"
-        className="bg-white p-2 rounded-sm w-48"
-      />
+      <a
+        href="/"
+        className="flex flex-col md:flex-row items-center space-x-4 bg-gray-100 rounded-sm"
+      >
+        <img
+          src={logo}
+          alt="International Solar Alliance Logo"
+          className="px-2 py-[20px] rounded-sm w-32"
+        />
+        <span className="text-3xl font-bold px-2 text-orange-600">
+          SolarX Starup Challenge
+        </span>
+      </a>
 
       {/* Desktop Navigation */}
       <nav className="hidden lg:block ">

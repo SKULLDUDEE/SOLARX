@@ -2,7 +2,8 @@ import axios from 'axios';
 import { getApiId } from '../utils/strapiHelper';
 
 // const API_URL = 'http://localhost:1337/api';
-export const API_URL = 'http://localhost:1337/api';
+const APP_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+export const API_URL = `${APP_URL}/api`;
 
 // // Company data
 // export const fetchCompanyData = async () => {
@@ -50,6 +51,8 @@ export const fetchCompanies = async (filters = {}) => {
     if (filters.sort !== false) {
       queryParams += '&sort=createdAt:desc';
     }
+
+    console.log(`${API_URL}/startups${queryParams}`);
     
     const response = await axios.get(`${API_URL}/startups${queryParams}`);
     return response.data;
@@ -93,17 +96,17 @@ export const getMediaUrl = (media) => {
   
   // Check if we have a URL directly
   if (media.url) {
-    return `${media.url.startsWith('http') ? '' : 'http://localhost:1337'}${media.url}`;
+    return `${media.url.startsWith('http') ? '' : `${APP_URL}`}${media.url}`;
   }
   
   // Check if we have attributes with URL
   if (media.attributes && media.attributes.url) {
-    return `${media.attributes.url.startsWith('http') ? '' : 'http://localhost:1337'}${media.attributes.url}`;
+    return `${media.attributes.url.startsWith('http') ? '' : `${APP_URL}`}${media.attributes.url}`;
   }
   
   // For Strapi v4 structure
   if (media.data && media.data.attributes && media.data.attributes.url) {
-    return `${media.data.attributes.url.startsWith('http') ? '' : 'http://localhost:1337'}${media.data.attributes.url}`;
+    return `${media.data.attributes.url.startsWith('http') ? '' : `${APP_URL}`}${media.data.attributes.url}`;
   }
   
   return '';
@@ -122,7 +125,7 @@ export const fetchCompanyWithRelationships = async (id) => {
     // Use fetch instead of axios to match the working approach in StartupDetail.jsx
     try {
       // Use filter query approach since direct endpoint is returning 404
-      const response = await fetch(`http://localhost:1337/api/companies?filters[id][$eq]=${id}&populate=Logo`);
+      const response = await fetch(`${API_URL}/companies?filters[id][$eq]=${id}&populate=Logo`);
       const data = await response.json();
       
       console.log(`Fetched company ${id} with relationships:`, data);
@@ -160,7 +163,7 @@ export const fetchCompanyWithRelationships = async (id) => {
           Logo: fields.Logo || null,
           logo: fields.Logo || null,
           imageUrl: hasAttributes && fields.Logo?.data?.attributes?.url 
-            ? `http://localhost:1337${fields.Logo.data.attributes.url}` 
+            ? `${APP_URL}${fields.Logo.data.attributes.url}` 
             : null,
           founders: [], // Founders will be fetched separately if needed
           // businessSummary, technology, and impactMetrics are now handled by separate API calls
@@ -363,14 +366,14 @@ const extractImageUrl = (imageData) => {
   try {
     // If it's a direct data object with attributes
     if (imageData.data && imageData.data.attributes && imageData.data.attributes.url) {
-      return `http://localhost:1337${imageData.data.attributes.url}`;
+      return `${APP_URL}${imageData.data.attributes.url}`;
     }
     
     // If it's an array of media objects
     if (Array.isArray(imageData) && imageData.length > 0) {
       const image = imageData[0];
       if (image && image.url) {
-        return `http://localhost:1337${image.url}`;
+        return `${APP_URL}${image.url}`;
       }
     }
     
@@ -437,7 +440,7 @@ export const fetchCompanyHeroData = async (id) => {
     // Use the collection endpoint with filter which we know works
     try {
       // Make a direct API call to get company data using the collection endpoint
-      const response = await fetch(`http://localhost:1337/api/companies?filters[id][$eq]=${id}&populate=Logo`);
+      const response = await fetch(`${API_URL}/companies?filters[id][$eq]=${id}&populate=Logo`);
       const data = await response.json();
       
       console.log(`API response for company ${id}:`, data);
@@ -463,7 +466,7 @@ export const fetchCompanyHeroData = async (id) => {
           description: introText || '',
           rawIntroduction: attributes.introduction, // Include raw data for debugging
           imageUrl: attributes.Logo?.data?.attributes?.url 
-            ? `http://localhost:1337${attributes.Logo.data.attributes.url}` 
+            ? `${APP_URL}${attributes.Logo.data.attributes.url}` 
             : null,
           logo: attributes.Logo || null,
           coverImage: attributes.Logo || null
@@ -523,7 +526,7 @@ export const fetchCompanyBusinessSummary = async (id) => {
     
     // First try to get the business summary directly from the business-summaries endpoint
     try {
-      const response = await fetch(`http://localhost:1337/api/business-summaries?filters[company][id][$eq]=${apiId}`);
+      const response = await fetch(`${API_URL}/business-summaries?filters[company][id][$eq]=${apiId}`);
       const result = await response.json();
       console.log(`Business summaries API response:`, result);
       
@@ -537,14 +540,14 @@ export const fetchCompanyBusinessSummary = async (id) => {
         let companyLogo = null;
         
         try {
-          const companyResponse = await fetch(`http://localhost:1337/api/companies?filters[id][$eq]=${id}&populate=Logo`);
+          const companyResponse = await fetch(`${API_URL}/companies?filters[id][$eq]=${id}&populate=Logo`);
           const companyResult = await companyResponse.json();
           
           if (companyResult && companyResult.data && companyResult.data.length > 0) {
             const companyData = companyResult.data[0].attributes;
             companyName = companyData.Name || 'Company Name';
             companyLogo = companyData.Logo?.data?.attributes?.url 
-              ? `http://localhost:1337${companyData.Logo.data.attributes.url}` 
+              ? `${APP_URL}${companyData.Logo.data.attributes.url}` 
               : null;
           }
         } catch (companyError) {

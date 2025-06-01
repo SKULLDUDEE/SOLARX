@@ -16,9 +16,7 @@ export default function MediaCoverageSection() {
         setLoading(true);
 
         const baseUrl = import.meta.env.VITE_API_URL;
-        const res = await fetch(
-          `${baseUrl}/api/startups?populate=Media`
-        );
+        const res = await fetch(`${baseUrl}/api/startups?populate=Media`);
         if (!res.ok) throw new Error(`Failed with status ${res.status}`);
         const json = await res.json();
 
@@ -41,7 +39,14 @@ export default function MediaCoverageSection() {
           });
         });
 
-        setMediaCoverage(coverage);
+        // random 6 items
+        if (coverage.length > 6) {
+          const shuffled = coverage.sort(() => 0.5 - Math.random());
+          console.log("MEDIA: ", shuffled.slice(0, 6));
+          setMediaCoverage(shuffled.slice(0, 6));
+        } else {
+          setMediaCoverage(coverage);
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -85,6 +90,7 @@ export default function MediaCoverageSection() {
               <a
                 href={item.link}
                 id={item.id}
+                key={index}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex justify-between flex-col bg-white rounded-xl shadow-lg hover:hover:shadow-[0px_0px_20px_5px_rgba(234,88,12,1)] transition-all duration-300 ease-in-out transform hover:-translate-y-1 overflow-hidden border border-gray-200 hover:border-orange-400 group"
