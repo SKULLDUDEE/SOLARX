@@ -4,7 +4,7 @@ import CompanyCard from "./CompanyCard";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import "./SliderStyles.css"; 
+import "./SliderStyles.css";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -22,7 +22,7 @@ const REGIONS_OPTIONS = [
 
 export default function SolarXWinners() {
   const sliderRef = useRef(null);
-  const [allCompaniesRaw, setAllCompaniesRaw] = useState(null); 
+  const [allCompaniesRaw, setAllCompaniesRaw] = useState(null);
   const [processedCompanies, setProcessedCompanies] = useState([]); // Store companies with id and regions
   const [selectedRegion, setSelectedRegion] = useState(REGIONS_OPTIONS[0]);
   const [loading, setLoading] = useState(true);

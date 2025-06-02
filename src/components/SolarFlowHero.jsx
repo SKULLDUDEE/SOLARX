@@ -34,11 +34,11 @@ const SolarFlowHero = ({ companyId }) => {
             website: company.Website_URL,
             contactEmail: company.Contact_Email,
             foundingYear: company.Founding_Year,
-            headquarters:
-              (await getLocationFromLatLong(
-                company.HQ_Location.lat,
-                company.HQ_Location.lng
-              )) || "Location not specified",
+            // headquarters:
+            //   (await getLocationFromLatLong(
+            //     company.HQ_Location.lat,
+            //     company.HQ_Location.lng
+            //   )) || "Location not specified",
             teamSize: company.Team_Size,
             LogoUrl: logoUrl,
             coverImage: company.Cover_Image?.url,

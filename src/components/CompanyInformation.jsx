@@ -42,11 +42,11 @@ export default function CompanyInformation({ companyId }) {
             Website: companyData.Website_URL || "",
             ContactEmail: companyData.Contact_Email || "",
             FoundingYear: companyData.Founding_Year || "",
-            Headquarters:
-              (await getLocationFromLatLong(
-                companyData.HQ_Location.lat,
-                companyData.HQ_Location.lng
-              )) || "Location not specified",
+            // Headquarters:
+            //   (await getLocationFromLatLong(
+            //     companyData.HQ_Location.lat,
+            //     companyData.HQ_Location.lng
+            //   )) || "Location not specified",
             TeamSize: companyData.Team_Size || "",
             sdgs: companyData.SDG,
           };

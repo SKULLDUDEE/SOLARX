@@ -42,7 +42,7 @@ export default function App() {
         <SolarXGlobalReach isMobile={isMobile} />
         <SuccessStories isMobile={isMobile} />
         <MediaCoverageSection isMobile={isMobile} />
-   
+
         <GlobalImpactSection isMobile={isMobile} />
         <AboutSolarXChallenge isMobile={isMobile} />
         <Footer />
