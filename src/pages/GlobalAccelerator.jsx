@@ -10,7 +10,7 @@ import "../styles/timeline.css";
 const GlobalAccelerator = () => {
   return (
     <>
-      <SolarXNavbar />
+      <SolarXNavbar centerBottom="Global Accelerator" />
       <HeroSectionGA />
       <TimelineSection />
       <MentorsSection />

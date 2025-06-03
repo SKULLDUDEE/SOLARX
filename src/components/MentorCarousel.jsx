@@ -120,9 +120,9 @@ export default function MentorCarousel({ darkMode = false, companyId }) {
               <div className="flex flex-wrap justify-center gap-6">
                 {mentors.length > 0 ? (
                   mentors.map((mentor) => (
-                    <div key={mentor.id} className="w-64 md:w-80">
+                    <div key={mentor.id} className="w-64 md:w-80 ">
                       <div
-                        className={`bg-gradient-to-b rounded-xl overflow-hidden shadow-2xl ${
+                        className={`bg-gradient-to-b rounded-xl overflow-hidden shadow-2xl h-full ${
                           darkMode
                             ? "from-black to-gray-800 border border-orange-500/20"
                             : "from-white to-orange-50 border border-orange-200"

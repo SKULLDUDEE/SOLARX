@@ -63,12 +63,17 @@ export const getCompanyIdsByName = async () => {
 
 
 export async function getLocationFromLatLong(latitude, longitude) {
-  const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=6`);
+  if (!latitude || !longitude) {
+    return null;
+  }
+  // const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=6`);
+  const response = await fetch(`https://us1.api-bdc.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
   const data = await response.json();
-  console.log('Location data:', data.display_name);
 
-  if (data && data.display_name) {
-    return data.display_name;
+  console.log('Reverse geocode data:', data);
+
+  if (data) {
+    return `${data.city}, ${data.countryName}`;
   } else {
     return 'Location not found';
   }

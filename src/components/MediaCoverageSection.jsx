@@ -1,61 +1,78 @@
 import React, { useState, useEffect } from "react";
 import { ExternalLink } from "lucide-react";
+import MediaMentionCard from "./global_accelerator/MediaMentionCard";
+
+const mediaMentionsData = [
+  {
+    id: 1,
+    headline:
+      "Sri Lankan Start-ups ace the SolarX Startup Challenge of Invest India and International Solar Alliance",
+    publisher: "Sri-Lankan Govt.",
+    platform: "Press Release",
+    year: 2024,
+    link: "https://www.hcicolombo.gov.in/section/press-releases/sri-lankan-start-ups-ace-the-solarx-startup-challenge-of-invest-india-and-international-solar-alliance/",
+    quotePlaceholder:
+      "Sri Lanka boasts the highest number of winners at the SolarX Startup Challenge (Asia-Pacific Chapter). The Challenge launched at COP 28 by the International Solar Alliance in collaboration with Invest India is committed to identifying and fostering innovative solutions in the solar energy sector.",
+  },
+  {
+    id: 2,
+    headline:
+      "International Solar Alliance announces winners of SolarX Startup Challenge 2024: APAC and India Edition",
+    publisher: "Economic Times",
+    platform: "News",
+    year: 2024,
+    link: "https://economictimes.indiatimes.com/small-biz/sme-sector/international-solar-alliance-announces-winners-of-solarx-startup-challenge-2024-apac-and-india-edition/articleshow/113162541.cms?from=mdr",
+    quotePlaceholder:
+      "The SolarX Startup Challenge 2024: APAC saw a remarkable response, with over 270 solar entrepreneurs and innovators participating from the Asia-Pacific region demonstrating the region’s vibrant solar energy ecosystem. Among the 30 winners of the challenge, 10 winners are from India and 20 winners hail from various other countries across the Asia-Pacific region. Each winner will receive a USD 15,000 cash grant, along with technical assistance through an acceleration program tailored to their specific needs.",
+  },
+  {
+    id: 3,
+    headline: "ISA Announces Twenty Winners of the SolarX Startup Challenge",
+    publisher: "Energetica India",
+    platform: "News",
+    year: 2023,
+    link: "https://www.energetica-india.net/news/isa-announces-twenty-winners-of-the-solarx-startup-challenge",
+    quotePlaceholder:
+      "The International Solar Alliance, announced winners of its SolarX Startup Challenge, at a side-event of the G20 Energy Transitions Working Group meeting in Goa. Around twenty companies from ten African countries were declared winners, who will work to increase solar deployment in the Africa Region. Out of the twenty winning companies, seven are led by women entrepreneurs. Along with a cash grant of USD 15,000 each, the winning startups will receive support from ISA, Invest India, WAIPA, GOGLA and other partner organisations. They will benefit from mentorship programmes, investor connections, and market access programmes, enabling them to implement their innovations on a larger scale",
+  },
+  {
+    id: 4,
+    headline:
+      "SolarX Startup Challenge 2024: ISA Enlists 10 Winners From India",
+    publisher: "Saur Energy International",
+    platform: "News",
+    year: 2024,
+    link: "https://www.saurenergy.com/solar-energy-news/solarx-startup-challenge-2024-isa-enlists-10-winners-from-india",
+    quotePlaceholder:
+      "The winners will also receive extensive support from ISA, Invest India, and other partner organisations through mentorship programs, investor connections, and market access initiatives. This support will empower them to scale their innovations and make a significant impact on the solar energy landscape across the APAC region. Through entrepreneurship, finance, and increased investments, ISA anticipates a transformative shift in enabling a swift energy transition in the Asia-Pacific.",
+  },
+  {
+    id: 5,
+    headline:
+      "ISA's Solar X Startup Challenge Hosts Its First Investor Pitch for Winners From Africa Edition",
+    publisher: "PV Magazine India",
+    platform: "Press Release",
+    year: 2024,
+    link: "https://www.pv-magazine-india.com/press-releases/isas-solar-x-startup-challenge-hosts-its-first-investor-pitch-for-winners-from-africa-edition/",
+    quotePlaceholder:
+      "On the sidelines of its Africa Regional Committee Meeting, the International Solar Alliance (ISA) conducted its first investor pitch session for the SolarX Startup Challenge 2023 winners. This initiative aims to provide a robust platform for the SolarX 2023 winners to showcase their innovative ideas to pioneering investors from the continent. The pitch session featured investors from Africa's solar and climate change space. The session witnessed dynamic innovators delivering compelling pitches to get investments from trailblazing investors.",
+  },
+  {
+    id: 6,
+    headline: "SOLARX STARTUP CHALLENGE 2023",
+    publisher: "Green Sceene Ethiopia",
+    platform: "Article",
+    year: 2023,
+    link: "https://greensceneethiopia.com/2024/09/25/solarx-startup-challenge-2023/",
+    quotePlaceholder:
+      "Recently, Deputy CEO Mr. Biniam Tufa had the opportunity to represent Our company and our country in Abidjan, Cote d’Ivoire, during a successful pitch to investors worldwide. He had a productive meeting with Dr. Habtamu, the Minister of Water and Energy of Ethiopia, where he discussed our company’s vision and the support needed to achieve it. “Witnessing the positivity and potential benefits for both our company and country from the ongoing changes, which are creating a favorable environment for foreign direct investment (FDI), was truly inspiring” Said Mr. Biniam.",
+  },
+];
 
 export default function MediaCoverageSection() {
-  const [mediaCoverage, setMediaCoverage] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
   const truncate = (string, length, end = "...") => {
     return string.length < length ? string : string.substring(0, length) + end;
   };
-
-  useEffect(() => {
-    const fetchMediaData = async () => {
-      try {
-        setLoading(true);
-
-        const baseUrl = import.meta.env.VITE_API_URL;
-        const res = await fetch(`${baseUrl}/api/startups?populate=Media`);
-        if (!res.ok) throw new Error(`Failed with status ${res.status}`);
-        const json = await res.json();
-
-        const coverage = [];
-
-        json.data?.forEach((startup) => {
-          const name = startup.Name || "Unknown";
-          startup.Media?.forEach((media) => {
-            coverage.push({
-              id: media.id,
-              source: media.Source || "Media",
-              publisher: media.Source || "Unknown",
-              title: media.Headline || "Untitled",
-              headline: media.Headline || "Untitled",
-              date: media.Date || "",
-              link: media.URL || "",
-              startupName: name,
-              initials: (media.Source || "M").substring(0, 2),
-            });
-          });
-        });
-
-        // random 6 items
-        if (coverage.length > 6) {
-          const shuffled = coverage.sort(() => 0.5 - Math.random());
-          console.log("MEDIA: ", shuffled.slice(0, 6));
-          setMediaCoverage(shuffled.slice(0, 6));
-        } else {
-          setMediaCoverage(coverage);
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMediaData();
-  }, []);
 
   return (
     <div className="max-w-5xl min-w-full mx-auto pb-16 bg-white px-4">
@@ -70,64 +87,22 @@ export default function MediaCoverageSection() {
         received prestigious awards.
       </p>
 
-      {loading && (
-        <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-red-100 text-red-700 p-4 rounded-lg max-w-2xl mx-auto">
-          <p className="font-medium">Error loading content:</p>
-          <p>{error}</p>
-        </div>
-      )}
-
-      {!loading && !error && (
-        <div className="grid md:grid-cols-3 gap-8 animate-slide-in-left max-w-7xl mx-auto px-4">
-          {mediaCoverage.length > 0 ? (
-            mediaCoverage.map((item, index) => (
-              <a
-                href={item.link}
-                id={item.id}
-                key={index}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex justify-between flex-col bg-white rounded-xl shadow-lg hover:hover:shadow-[0px_0px_20px_5px_rgba(234,88,12,1)] transition-all duration-300 ease-in-out transform hover:-translate-y-1 overflow-hidden border border-gray-200 hover:border-orange-400 group"
-              >
-                <div className="p-5 sm:p-6 flex flex-col justify-between">
-                  <p className="text-xs text-gray-500 mb-2">
-                    <span className="font-semibold text-gray-700">
-                      {item.publisher}
-                    </span>
-                    <span className="mx-1">|</span>
-                    <span>{item.date}</span>
-                  </p>
-
-                  <h3 className="text-lg sm:text-2xl font-semibold text-orange-600 mt-2 leading-tight group-hover:text-orange-600 transition-colors">
-                    {item.headline}
-                  </h3>
-                </div>
-                <div className="bg-gray-50 px-5 py-3 sm:px-6 sm:py-4 border-t border-gray-100 text-right">
-                  <span className="text-xs sm:text-sm font-medium text-orange-500 group-hover:text-orange-700 transition-colors inline-flex items-center">
-                    Read Full Article
-                    <ExternalLink size={14} className="ml-1.5" />
-                  </span>
-                </div>
-              </a>
-            ))
-          ) : (
-            <div className="col-span-2 text-center bg-gray-50 border border-gray-200 p-10 rounded-lg">
-              <h3 className="text-xl font-semibold text-gray-700">
-                No Media Coverage Available
-              </h3>
-              <p className="text-gray-500 mt-2">
-                Media stories will appear here once available.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+      <div className="grid md:grid-cols-3 gap-8 animate-slide-in-left max-w-7xl mx-auto px-4">
+        {mediaMentionsData.length > 0 ? (
+          mediaMentionsData.map((item, index) => (
+            <MediaMentionCard key={index} {...item} />
+          ))
+        ) : (
+          <div className="col-span-2 text-center bg-gray-50 border border-gray-200 p-10 rounded-lg">
+            <h3 className="text-xl font-semibold text-gray-700">
+              No Media Coverage Available
+            </h3>
+            <p className="text-gray-500 mt-2">
+              Media stories will appear here once available.
+            </p>
+          </div>
+        )}
+      </div>
 
       <style jsx>{`
         @keyframes fadeIn {

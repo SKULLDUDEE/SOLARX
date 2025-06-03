@@ -1,9 +1,75 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { API_URL } from "../services/api";
+
 export default function StatsSection() {
-  // TODO: Cumulative
+  const [stats2, setStats] = useState([]);
+
+  const formatCurrency = (amount) => {
+    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
+    if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}K`;
+    return `$${amount.toFixed(0)}`;
+  };
+
+  useEffect(() => {
+    setStats([]);
+
+    const getStats = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/startups?populate[0]=funding`);
+
+        console.log("Response from API:", res.data);
+
+        if (res && res.data && res.data.data) {
+          const regionsCount = () => {
+            const uniqueRegions = new Set();
+            res.data.data.forEach((startup) => {
+              if (startup && startup.Regions) {
+                startup.Regions.forEach((region) => {
+                  uniqueRegions.add(region);
+                });
+              }
+            });
+
+            return uniqueRegions.size;
+          };
+
+          const totalFunding = () => {
+            let total = 0;
+            res.data.data.forEach((startup) => {
+              if (startup && startup.funding && startup.funding) {
+                startup.funding.forEach((funding) => {
+                  if (funding && funding.Amount_Raised) {
+                    total += parseInt(funding.Amount_Raised);
+                  }
+                });
+              }
+            });
+            return formatCurrency(total);
+            
+          };
+          const statsData = {
+            startupsCount: res.data.data.length,
+            regionsCount: regionsCount(),
+            funding: totalFunding(),
+          }; // length of array
+
+          setStats(statsData);
+        } else {
+          console.error("Unexpected response structure:", res.data);
+        }
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
+    };
+
+    getStats();
+  }, []);
+
   const stats = [
     {
       id: 1,
-      value: "50+",
+      value: `${stats2.startupsCount}+` || "0",
       label: "Innovative Startups",
       icon: (
         <svg
@@ -24,7 +90,7 @@ export default function StatsSection() {
     },
     {
       id: 2,
-      value: "4",
+      value: stats2.regionsCount || "0",
       label: "Global Regions",
       icon: (
         <svg
@@ -45,7 +111,7 @@ export default function StatsSection() {
     },
     {
       id: 3,
-      value: "$25M",
+      value: `${stats2.funding || "$0"}`,
       label: "Funding Facilitated",
       icon: (
         <svg

@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { fetchCompanies } from "../services/api"; // Assuming this fetches all companies
+import { useState, useEffect, useMemo, useRef } from "react";
+import axios from "axios";
+import { API_URL } from "../services/api";
 import CompanyCard from "./CompanyCard";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
@@ -11,6 +12,8 @@ import {
   Loader2,
   AlertTriangle,
 } from "lucide-react";
+import { getLocationFromLatLong } from "../utils/strapiHelper";
+import Bottleneck from "bottleneck";
 
 const REGIONS_OPTIONS = [
   "All Regions",
@@ -20,140 +23,193 @@ const REGIONS_OPTIONS = [
   "Africa",
 ];
 
+const limiter = new Bottleneck({
+  minTime: 500, // 500ms between each request (2 per second)
+  maxConcurrent: 1, // Queue requests one at a time
+});
+
+const throttledGetLocation = limiter.wrap(async (lat, lng) => {
+  try {
+    const location = await getLocationFromLatLong(lat, lng);
+    return location || "Something";
+  } catch (e) {
+    console.warn("Failed to get location from lat/long", e);
+    return "Something";
+  }
+});
+
+const shuffleArray = (array) => {
+  if (!Array.isArray(array) || array.length === 0) return array;
+
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
+const transformStartupData = async (rawStartup) => {
+  let location = "Location not specified";
+  if (rawStartup.HQ_Location?.lat && rawStartup.HQ_Location?.lng) {
+    try {
+      location = await getLocationFromLatLong(
+        rawStartup.HQ_Location.lat,
+        rawStartup.HQ_Location.lng
+      );
+    } catch (e) {
+      console.warn("Failed to get location from lat/long", e);
+    }
+  }
+
+  return {
+    id: rawStartup.id,
+    documentId: rawStartup.documentId,
+    name: rawStartup.Name || "Unnamed Startup",
+    regions: rawStartup.Regions || [],
+    location,
+    description:
+      rawStartup.Description?.[0]?.children?.[0]?.text ||
+      "No description available",
+    categories: shuffleArray(rawStartup.Sector_Tags)?.slice(0, 2) || [
+      "General",
+    ],
+    logo: rawStartup.Company_Logo?.formats?.small?.url || "",
+    coverImage: rawStartup.Cover_Image?.formats?.small?.url || "",
+  };
+};
+
 export default function SolarXWinners() {
   const sliderRef = useRef(null);
-  const [allCompaniesRaw, setAllCompaniesRaw] = useState(null);
-  const [processedCompanies, setProcessedCompanies] = useState([]); // Store companies with id and regions
+  const [startups, setStartups] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState(REGIONS_OPTIONS[0]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch companies data from API
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetchCompanies(); // Fetches all companies
+    const fetchDataAndProcess = async () => {
+      setLoading(true);
+      setError(null);
+      setStartups([]);
 
-        if (response && response.data) {
-          setAllCompaniesRaw(response.data); // Assuming response.data is the array of companies
+      try {
+        const response = await axios.get(
+          `${API_URL}/startups?populate[0]=Company_Logo&populate[1]=Cover_Image`
+        );
+
+        if (response && response.data && response.data.data) {
+          const rawStartups = response.data.data;
+          console.log("Fetched raw companies data:", rawStartups);
+
+          if (rawStartups.length === 0) {
+            setStartups([]);
+          } else {
+            const cleanedStartups = await Promise.all(
+              rawStartups.map(transformStartupData)
+            );
+            console.log("Cleaned startups data:", cleanedStartups);
+            setStartups(cleanedStartups);
+          }
         } else {
           console.warn(
             "No data in API response for SolarXWinners, or structure is unexpected."
           );
-          setAllCompaniesRaw([]);
+          setStartups([]);
         }
       } catch (err) {
-        console.error("Error fetching companies for SolarXWinners:", err);
+        console.error("Error fetching or processing companies:", err);
         setError("Failed to load SolarX Winners. Please try again later.");
-        setAllCompaniesRaw([]);
+        setStartups([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchDataAndProcess();
   }, []);
 
-  // Process raw companies data once it's fetched
-  useEffect(() => {
-    if (allCompaniesRaw) {
-      const newProcessedCompanies = allCompaniesRaw.map((company) => ({
-        id: company.id,
-        // Adjust 'company.attributes.Regions' if your API structure is different
-        // Ensure 'regions' is always an array
-        regions: company.Regions || [],
-      }));
-      setProcessedCompanies(newProcessedCompanies);
-    }
-  }, [allCompaniesRaw]);
-
-  // Filter companies based on selected region
   const filteredCompanies = useMemo(() => {
-    if (!processedCompanies || processedCompanies.length === 0) {
-      return [];
-    }
     if (selectedRegion === "All Regions") {
-      return processedCompanies;
+      return startups;
     }
-    return processedCompanies.filter(
+    return startups.filter(
       (company) => company.regions && company.regions.includes(selectedRegion)
     );
-  }, [processedCompanies, selectedRegion]);
+  }, [startups, selectedRegion]);
 
-  const defaultRegionClass = "orange-gradient"; // For CompanyCard internal badge styling
+  const sliderSettings = useMemo(() => {
+    const numItems = filteredCompanies.length;
 
-  // Dynamically adjust slider settings based on filtered companies
-  const currentSlidesToShow = Math.min(
-    3,
-    filteredCompanies.length > 0 ? filteredCompanies.length : 1
-  );
+    const calculateResponsiveSettings = (maxSlidesForView) => {
+      const slidesToShow = Math.min(maxSlidesForView, Math.max(1, numItems)); // Ensure at least 1 slide is shown
+      return {
+        slidesToShow,
+        slidesToScroll: slidesToShow,
+        infinite: numItems > slidesToShow,
+      };
+    };
 
-  const sliderSettings = {
-    dots: true,
-    arrows: false, // We'll use custom arrows
-    infinite: filteredCompanies.length > currentSlidesToShow,
-    speed: 500,
-    slidesToShow: currentSlidesToShow,
-    slidesToScroll: Math.min(
-      3,
-      filteredCompanies.length > 0 ? filteredCompanies.length : 1
-    ),
-    initialSlide: 0,
-    autoplay: filteredCompanies.length > currentSlidesToShow,
-    autoplaySpeed: 5000,
-    pauseOnHover: true,
-    swipeToSlide: true,
-    responsive: [
-      {
-        breakpoint: 1024, // lg
-        settings: {
-          slidesToShow: Math.min(
-            2,
-            filteredCompanies.length > 0 ? filteredCompanies.length : 1
-          ),
-          slidesToScroll: Math.min(
-            2,
-            filteredCompanies.length > 0 ? filteredCompanies.length : 1
-          ),
-          infinite:
-            filteredCompanies.length >
-            Math.min(
-              2,
-              filteredCompanies.length > 0 ? filteredCompanies.length : 1
-            ),
+    const desktopResponsiveConfig = calculateResponsiveSettings(3);
+
+    return {
+      dots: true,
+      arrows: false,
+      speed: 500,
+      initialSlide: 0,
+      autoplay: desktopResponsiveConfig.infinite,
+      autoplaySpeed: 5000,
+      pauseOnHover: true,
+      swipeToSlide: true,
+      ...desktopResponsiveConfig,
+      responsive: [
+        {
+          breakpoint: 1024, // lg
+          settings: calculateResponsiveSettings(2), // Max 2 for large tablets
         },
-      },
-      {
-        breakpoint: 768, // md
-        settings: {
-          slidesToShow: Math.min(
-            2,
-            filteredCompanies.length > 0 ? filteredCompanies.length : 1
-          ),
-          slidesToScroll: Math.min(
-            2,
-            filteredCompanies.length > 0 ? filteredCompanies.length : 1
-          ),
-          infinite:
-            filteredCompanies.length >
-            Math.min(
-              2,
-              filteredCompanies.length > 0 ? filteredCompanies.length : 1
-            ),
+        {
+          breakpoint: 768, // md
+          settings: calculateResponsiveSettings(2), // Max 2 for smaller tablets
         },
-      },
-      {
-        breakpoint: 640, // sm
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          infinite: filteredCompanies.length > 1,
+        {
+          breakpoint: 640, // sm
+          settings: calculateResponsiveSettings(1), // 1 slide for mobile
         },
-      },
-    ],
-  };
+      ],
+    };
+  }, [filteredCompanies.length]);
+
+  const showSliderNavButtons = sliderSettings.infinite;
+
+  if (loading) {
+    return (
+      <section
+        id="winners"
+        className="max-w-screen-2xl mx-auto min-w-full bg-gradient-to-b from-white via-orange-50 to-white py-16 md:py-24 relative flex justify-center items-center min-h-[500px]"
+      >
+        <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section
+        id="winners"
+        className="max-w-screen-2xl mx-auto min-w-full bg-gradient-to-b from-white via-orange-50 to-white py-16 md:py-24 relative"
+      >
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-6 rounded-md mb-8 text-center shadow-md max-w-lg mx-auto">
+            <div className="flex justify-center mb-3">
+              <AlertTriangle className="h-8 w-8 text-red-500" />
+            </div>
+            <p className="font-semibold text-lg mb-1">
+              Oops! Something went wrong.
+            </p>
+            <p className="text-sm">{error}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -190,42 +246,21 @@ export default function SolarXWinners() {
           ))}
         </div>
 
-        {loading && (
-          <div className="flex justify-center items-center py-20 min-h-[300px]">
-            <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
-          </div>
-        )}
-
-        {error && !loading && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-6 rounded-md mb-8 text-center shadow-md max-w-lg mx-auto">
-            <div className="flex justify-center mb-3">
-              <AlertTriangle className="h-8 w-8 text-red-500" />
-            </div>
-            <p className="font-semibold text-lg mb-1">
-              Oops! Something went wrong.
-            </p>
-            <p className="text-sm">{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && filteredCompanies.length === 0 && (
+        {filteredCompanies.length === 0 ? (
           <div className="bg-orange-50 border-l-4 border-orange-400 text-orange-700 p-6 rounded-md mb-8 text-center shadow-md max-w-lg mx-auto min-h-[200px] flex flex-col justify-center items-center">
-            <p className="text-xl font-semibold mb-2">No Companies Found</p>
+            <p className="text-xl font-semibold mb-2">No Startups Found</p>
             <p className="text-sm">
               {selectedRegion === "All Regions"
-                ? "There are currently no companies to display."
-                : `No companies found for the "${selectedRegion}" region.`}
+                ? "There are currently no startups to display."
+                : `No startups found for the "${selectedRegion}" region.`}
             </p>
             <p className="text-sm mt-1">
               Try selecting a different region or check back later.
             </p>
           </div>
-        )}
-
-        {!loading && !error && filteredCompanies.length > 0 && (
+        ) : (
           <div className="mt-8">
-            {/* Slider Controls (Optional - if you want them outside the slider component) */}
-            {filteredCompanies.length > currentSlidesToShow && (
+            {showSliderNavButtons && (
               <div className="flex justify-end items-center mb-4 px-1 sm:px-0">
                 <div className="flex gap-2">
                   <button
@@ -247,8 +282,6 @@ export default function SolarXWinners() {
             )}
 
             <div className="slider-container -mx-2 sm:-mx-3">
-              {" "}
-              {/* Negative margin to counteract padding in slides */}
               <Slider
                 ref={sliderRef}
                 {...sliderSettings}
@@ -256,15 +289,10 @@ export default function SolarXWinners() {
               >
                 {filteredCompanies.map((company) => (
                   <div
-                    key={company.id}
+                    key={company.id} // Using company.id as the primary unique key
                     className="px-2 sm:px-3 h-full card-container"
                   >
-                    {" "}
-                    {/* Padding for spacing between cards */}
-                    <CompanyCard
-                      companyId={company.id}
-                      regionClass={defaultRegionClass} // Pass this for internal CompanyCard styling
-                    />
+                    <CompanyCard {...company} />
                   </div>
                 ))}
               </Slider>

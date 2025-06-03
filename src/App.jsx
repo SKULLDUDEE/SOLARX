@@ -40,7 +40,7 @@ export default function App() {
         <StatsSection isMobile={isMobile} />
         <FundingInvestorsDashboard isMobile={isMobile} />
         <SolarXGlobalReach isMobile={isMobile} />
-        <SuccessStories isMobile={isMobile} />
+        {/* <SuccessStories isMobile={isMobile} /> */}
         <MediaCoverageSection isMobile={isMobile} />
 
         <GlobalImpactSection isMobile={isMobile} />

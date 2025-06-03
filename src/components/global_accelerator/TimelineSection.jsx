@@ -9,8 +9,8 @@ const webinarSeriesData = {
       month: "March",
       sessionNum: "1A",
       date: [
-        "Fri, Mar 14 (11:00-12:30 PM IST)",
-        "Tues, Mar 18 (11:00-12:30 PM IST)",
+        "Fri, 14 Mar (11:00-12:30 PM IST)",
+        "Tues, 18 Mar (11:00-12:30 PM IST)",
       ],
       topic: "Masterclass on Fundraising",
       speakersVCA: "Sanchayan Chakraborty (Aavishkaar Capital)",
@@ -24,8 +24,8 @@ const webinarSeriesData = {
       month: "April",
       sessionNum: "2A",
       date: [
-        "Mon, Apr 5 (03:00-05:30 PM IST)",
-        "Thurs, Apr 8 (03:00-05:30 PM IST)",
+        "Mon, 5 Apr (03:00-05:30 PM IST)",
+        "Thurs, 8 Apr (03:00-05:30 PM IST)",
       ],
       topic:
         "What Do VCs Look for in a Startup? A Masterclass on Securing Investment",
@@ -40,8 +40,8 @@ const webinarSeriesData = {
       month: "May",
       sessionNum: "3A",
       date: [
-        "Wed, May 21 (02:00-03:30 PM IST)",
-        "Wed, May 28 (02:00-03:30 PM IST)",
+        "Wed, 21 May (02:00-03:30 PM IST)",
+        "Wed, 28 May (02:00-03:30 PM IST)",
       ],
       topic:
         "Crafting a compelling narrative and pitch, Problem-solution fit, User centric design/ rapid prototyping approaches.",
@@ -56,8 +56,8 @@ const webinarSeriesData = {
       month: "June",
       sessionNum: "4A",
       date: [
-        "Thurs, June 5 (01:30-03:00 PM IST)",
-        "Thurs, June 19 (01:30-03:00 PM IST)",
+        "Thurs, 5 June (01:30-03:00 PM IST)",
+        "Thurs, 19 June (01:30-03:00 PM IST)",
       ],
       topic: "Fundraising with the exit in mind.",
       speakersVCA: "Thomas Van Halen (VC4A)",
@@ -70,8 +70,8 @@ const webinarSeriesData = {
       month: "July",
       sessionNum: "5A",
       date: [
-        "Thurs, July 17 (10:00-11:30 PM IST)",
-        "Thurs, July 24 (10:00-11:30 PM IST)",
+        "Thurs, 17 July (10:00-11:30 PM IST)",
+        "Thurs, 24 July (10:00-11:30 PM IST)",
       ],
       topic: "Investor readiness, selection, and key considerations",
       speakersVCA: "Babatunde Usman (Acumen)",
@@ -83,7 +83,7 @@ const webinarSeriesData = {
     {
       month: "August",
       sessionNum: "6A",
-      date: ["Thurs, Aug 7", "Thurs, Aug 21"],
+      date: ["Thurs, 7 Aug", "Thurs, 21 Aug"],
       topic:
         "ESG and climate risks for the RE sector. Sustainable finance and innovative financing mechanisms for RE",
       speakersVCA: "Namita Vikas (AuctusESG)",
@@ -179,9 +179,11 @@ const sortedTimelineEventsData = [...transformedTimelineEvents];
 // });
 
 // --- TimelineSection Component ---
+const MOBILE_BREAKPOINT = 768; // Tailwind's 'md' breakpoint
 const TimelineSection = () => {
   const scrollSectionRef = useRef(null);
   const stickyParentRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   console.log(transformedTimelineEvents);
 
@@ -194,7 +196,12 @@ const TimelineSection = () => {
   });
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    };
+
     const calculateDimensions = () => {
+      checkMobile(); // Check mobile state on dimension calculation
       if (scrollSectionRef.current && stickyParentRef.current) {
         setDimensions({
           scrollWidth: scrollSectionRef.current.scrollWidth,
@@ -229,6 +236,14 @@ const TimelineSection = () => {
   }, []);
 
   useEffect(() => {
+    if (isMobile) {
+      // If mobile, don't apply scroll-driven animation
+      if (scrollSectionRef.current) {
+        scrollSectionRef.current.style.transform = "translate3d(0px, 0, 0)";
+      }
+      return;
+    }
+
     const scrollSectionNode = scrollSectionRef.current;
     if (
       !scrollSectionNode ||
@@ -290,12 +305,16 @@ const TimelineSection = () => {
     <section className="timeline-section-container bg-gradient-to-tr from-gray-900 via-orange-900 to-orange-700 text-white py-16 md:py-20">
       <div
         className="relative w-full h-[600vh]" // This height drives the scroll duration of the effect
-        ref={stickyParentRef}
+        ref={!isMobile ? stickyParentRef : undefined}
       >
-        <div className="overflow-hidden sticky top-0 h-screen w-screen">
+        <div
+          className={`overflow-hidden ${
+            !isMobile ? "sticky" : ""
+          } top-0 h-screen w-screen`}
+        >
           <div
-            className="absolute top-0 left-0 h-full flex items-center" // scroll-section
-            ref={scrollSectionRef}
+            className="absolute top-0 left-0 pt-24 h-full flex items-center" // scroll-section
+            ref={!isMobile ? scrollSectionRef : undefined}
             style={{ willChange: "transform" }}
           >
             {sortedTimelineEventsData.map(
@@ -343,36 +362,40 @@ const TimelineSection = () => {
                       }
                     `}</style>
                   </div>
-                  <div className="w-full md:w-[55%] xl:w-[60%] max-w-[650px] flex flex-col justify-center items-start md:pl-4">
+                  <div className="w-full md:w-[55%] xl:w-[60%] h-full flex flex-col justify-center items-start md:pl-4">
                     <div className="flex flex-col items-start mb-6 relative">
-                      <h2 className="text-5xl lg:text-5xl font-bold pb-2.5 relative mb-2 text-white after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-[60px] after:h-[3px] after:rounded-sm after:bg-orange-500">
+                      <h2 className="text-5xl lg:text-5xl font-bold pb-2.5 relative mb-2 text-white h-3/5 self-start">
                         {event.title}
+                        <div className="w-2/5 h-1.5 mt-4 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
                       </h2>
-                      <div className="">
-                        <img
-                          src={event.imgSrc}
-                          alt={`${event.id}'s image`}
-                          style={{
-                            width: "120px",
-                            height: "120px",
-                            borderRadius: "9999px",
-                            objectFit: "cover",
-                          }}
-                        />
-                        <h3 className="text-2xl font-semibold text-white">
-                          <a href={`#${event.id}`}>
-                            <span // description
-                              className="w-full max-h-[40vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-slate-700/50 pr-2 [&_ul]:list-outside [&_ul]:mt-3 [&_ul]:pl-5 [&_li]:mb-1.5 [&_li]:text-white [&_strong]:text-white"
-                              dangerouslySetInnerHTML={{
-                                __html: event.description,
-                              }}
-                            ></span>
-                          </a>
-                        </h3>
+                      <div className="h-2/5 self-end w-full">
+                        <div className="w-full flex flex-col items-start justify-start space-x-4">
+                          <img
+                            src={event.imgSrc}
+                            alt={`${event.id}'s image`}
+                            className="ml-4"
+                            style={{
+                              width: "120px",
+                              height: "120px",
+                              borderRadius: "9999px",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <h3 className="text-2xl font-semibold text-white">
+                            <a href={`#${event.id}`}>
+                              <span // description
+                                className="w-full max-h-[40vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-slate-700/50 pr-2 [&_ul]:list-outside [&_ul]:mt-3 [&_ul]:pl-5 [&_li]:mb-1.5 [&_li]:text-white [&_strong]:text-white"
+                                dangerouslySetInnerHTML={{
+                                  __html: event.description,
+                                }}
+                              ></span>
+                            </a>
+                          </h3>
+                          <div className="text-3xl text-white font-medium mt-8">
+                            {event.date}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-3xl text-white font-medium">
-                      {event.date}
                     </div>
                   </div>
                 </div>

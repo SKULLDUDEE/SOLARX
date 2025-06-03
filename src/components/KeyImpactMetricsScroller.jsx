@@ -5,12 +5,12 @@ const ImpactMetricDisplay = ({ label, value }) => (
   >
     <div className="flex flex-col h-full w-full">
       <span
-        className="text-2xl font-semibold text-center text-gray-800 bg-orange-300/70 w-full rounded-t-xl px-4 sm:px-6 py-4 sm:py-5 truncate"
+        className="text-xl font-semibold text-center text-gray-800 bg-orange-300/70 w-full rounded-t-xl px-4 sm:px-6 py-4 sm:py-5 truncate"
         title={label}
       >
         {label}
       </span>
-      <span className="text-xl sm:text-3xl font-bold text-gray-800 flex-1 flex items-center justify-center text-center">
+      <span className="text-xl sm:text-2xl font-semibold text-gray-800 flex-1 flex items-center justify-center text-center">
         {value}
       </span>
       {/* <div className="w-full h-[5px] bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div> */}

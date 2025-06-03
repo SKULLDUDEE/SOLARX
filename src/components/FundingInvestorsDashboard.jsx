@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../services/api";
 import {
   Building2,
   DollarSign,
@@ -26,7 +27,11 @@ const InvestorCard = ({ name, Icon, index, frequency }) => (
     className={`text-center p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animation-delay-${
       index * 100
     }`}
-    title={`${name}${frequency ? ` - Funded ${frequency} project${frequency !== 1 ? 's' : ''}` : ''}`}
+    title={`${name}${
+      frequency
+        ? ` - Funded ${frequency} project${frequency !== 1 ? "s" : ""}`
+        : ""
+    }`}
   >
     <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-md">
       <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
@@ -36,7 +41,7 @@ const InvestorCard = ({ name, Icon, index, frequency }) => (
     </p>
     {frequency > 0 && (
       <div className="mt-1 text-xs text-orange-500 font-medium">
-        {frequency} project{frequency !== 1 ? 's' : ''}
+        {frequency} project{frequency !== 1 ? "s" : ""}
       </div>
     )}
   </div>
@@ -128,9 +133,8 @@ export default function FundingInvestorsDashboard() {
       setLoading(true);
       setError(null);
       try {
-        const baseUrl = import.meta.env.VITE_API_URL;
         const response = await fetch(
-          `${baseUrl}/api/startups?populate[0]=funding&populate[1]=funding.investors`
+          `${API_URL}/startups?populate[0]=funding&populate[1]=funding.investors`
         );
         if (!response.ok) {
           throw new Error(
@@ -138,6 +142,7 @@ export default function FundingInvestorsDashboard() {
           );
         }
         const result = await response.json();
+        console.log("Funding Data Result:", result);
 
         if (result?.data?.length > 0) {
           let allRounds = [];
@@ -191,9 +196,9 @@ export default function FundingInvestorsDashboard() {
           ];
           // Count investor frequency
           const investorFrequencyMap = {};
-          allRounds.forEach(round => {
+          allRounds.forEach((round) => {
             if (round.sourceInvestors && round.sourceInvestors.length > 0) {
-              round.sourceInvestors.forEach(name => {
+              round.sourceInvestors.forEach((name) => {
                 if (!investorFrequencyMap[name]) {
                   investorFrequencyMap[name] = 0;
                 }
@@ -203,8 +208,10 @@ export default function FundingInvestorsDashboard() {
           });
 
           // Sort investors by frequency (descending order)
-          const sortedInvestors = Array.from(allInvestorsSet)
-            .sort((a, b) => (investorFrequencyMap[b] || 0) - (investorFrequencyMap[a] || 0));
+          const sortedInvestors = Array.from(allInvestorsSet).sort(
+            (a, b) =>
+              (investorFrequencyMap[b] || 0) - (investorFrequencyMap[a] || 0)
+          );
 
           const investorsArray = sortedInvestors
             .slice(0, 6)
@@ -213,19 +220,19 @@ export default function FundingInvestorsDashboard() {
               icon: iconMap[index % iconMap.length],
               frequency: investorFrequencyMap[name] || 0,
             }));
-            
+
           // Extract focus areas from funding data
           // For this example, we'll use Technology_Tags from startups as focus areas
           const focusAreaFrequencyMap = {};
-          result.data.forEach(item => {
+          result.data.forEach((item) => {
             const technologyTags = item.Technology_Tags || [];
             const sectorTags = item.Sector_Tags || [];
             const productTags = item.Product_Tags || [];
-            
+
             // Combine all tags as potential focus areas
             const allTags = [...technologyTags, ...sectorTags, ...productTags];
-            
-            allTags.forEach(tag => {
+
+            allTags.forEach((tag) => {
               if (tag && tag.trim()) {
                 if (!focusAreaFrequencyMap[tag]) {
                   focusAreaFrequencyMap[tag] = 0;
@@ -234,7 +241,7 @@ export default function FundingInvestorsDashboard() {
               }
             });
           });
-          
+
           // Sort focus areas by frequency
           const sortedFocusAreas = Object.keys(focusAreaFrequencyMap)
             .sort((a, b) => focusAreaFrequencyMap[b] - focusAreaFrequencyMap[a])
@@ -342,114 +349,120 @@ export default function FundingInvestorsDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-        {/* Left Column (Wider) - Funding Breakdown & Total */}
-<div className="lg:col-span-2 space-y-6">
-  {/* Funding Breakdown */}
-  <div
-    className={`bg-orange-100/80 backdrop-blur-md p-4 sm:p-5 rounded-xl shadow-lg border border-orange-100/60 transform transition-all duration-300 hover:-translate-y-1 ${
-      isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6"
-    }`}
-  >
-    <div className="flex items-center space-x-3 mb-4">
-      <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
-        Funding Breakdown
-      </h3>
-    </div>
-    <div className="space-y-4">
-      {fundingData.length > 0 ? (
-        fundingData.map((item, index) => (
-          <FundingBreakdownItem
-            key={index}
-            type={item.type}
-            amountFormatted={item.amountFormatted}
-            widthPercentage={item.widthPercentage}
-            percentageFormatted={item.percentageFormatted}
-          />
-        ))
-      ) : (
-        <p className="text-center text-gray-500 py-4 text-sm">
-          No funding breakdown data available.
-        </p>
-      )}
-    </div>
-  </div>
+          {/* Left Column (Wider) - Funding Breakdown & Total */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Funding Breakdown */}
+            <div
+              className={`bg-orange-100/80 backdrop-blur-md p-4 sm:p-5 rounded-xl shadow-lg border border-orange-100/60 transform transition-all duration-300 hover:-translate-y-1 ${
+                isVisible
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-6"
+              }`}
+            >
+              <div className="flex items-center space-x-3 mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+                  Funding Breakdown
+                </h3>
+              </div>
+              <div className="space-y-4">
+                {fundingData.length > 0 ? (
+                  fundingData.map((item, index) => (
+                    <FundingBreakdownItem
+                      key={index}
+                      type={item.type}
+                      amountFormatted={item.amountFormatted}
+                      widthPercentage={item.widthPercentage}
+                      percentageFormatted={item.percentageFormatted}
+                    />
+                  ))
+                ) : (
+                  <p className="text-center text-gray-500 py-4 text-sm">
+                    No funding breakdown data available.
+                  </p>
+                )}
+              </div>
+            </div>
 
-  {/* Total Funding */}
-  <div
-    className={`bg-orange-100/80 backdrop-blur-md p-4 sm:p-5 rounded-xl shadow-lg border border-green-100/60 transform transition-all duration-300 hover:-translate-y-1 ${
-      isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6"
-    }`}
-  >
-    <div className="flex items-center space-x-3 mb-3">
-      <h3 className="text-lg sm:text-xl font-bold text-gray-800">
-        Total Funding Facilitated
-      </h3>
-    </div>
-    <p className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">
-      {formatCurrency(totalFunding)}
-    </p>
-    <p className="text-xs text-gray-600 mt-1">
-      Cumulative capital raised to date.
-    </p>
-  </div>
-</div>
+            {/* Total Funding */}
+            <div
+              className={`bg-orange-100/80 backdrop-blur-md p-4 sm:p-5 rounded-xl shadow-lg border border-green-100/60 transform transition-all duration-300 hover:-translate-y-1 ${
+                isVisible
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-6"
+              }`}
+            >
+              <div className="flex items-center space-x-3 mb-3">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800">
+                  Total Funding Facilitated
+                </h3>
+              </div>
+              <p className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">
+                {formatCurrency(totalFunding)}
+              </p>
+              <p className="text-xs text-gray-600 mt-1">
+                Cumulative capital raised to date.
+              </p>
+            </div>
+          </div>
 
+          {/* Right Column - Investors & Focus Areas */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Key Investors & Partners */}
+            {investors.length > 0 && (
+              <div
+                className={`bg-orange-100/80 backdrop-blur-md p-4 sm:p-5 rounded-xl shadow-lg border border-blue-100/60 transform transition-all duration-300 ${
+                  isVisible
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 translate-x-6"
+                }`}
+              >
+                <div className="flex items-center space-x-3 mb-4">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-800">
+                    Key Investors & Partners
+                  </h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {investors.map((investor, index) => (
+                    <InvestorCard
+                      key={index}
+                      name={investor.name}
+                      Icon={investor.icon}
+                      index={index}
+                      frequency={investor.frequency}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
-         {/* Right Column - Investors & Focus Areas */}
-<div className="lg:col-span-2 space-y-6">
-  {/* Key Investors & Partners */}
-  {investors.length > 0 && (
-    <div
-      className={`bg-orange-100/80 backdrop-blur-md p-4 sm:p-5 rounded-xl shadow-lg border border-blue-100/60 transform transition-all duration-300 ${
-        isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-6"
-      }`}
-    >
-      <div className="flex items-center space-x-3 mb-4">
-        <h3 className="text-lg sm:text-xl font-bold text-gray-800">
-          Key Investors & Partners
-        </h3>
-      </div>
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        {investors.map((investor, index) => (
-          <InvestorCard
-            key={index}
-            name={investor.name}
-            Icon={investor.icon}
-            index={index}
-            frequency={investor.frequency}
-          />
-        ))}
-      </div>
-    </div>
-  )}
-
-  {/* Investment Focus Areas */}
-  {focusAreas.length > 0 && (
-    <div
-      className={`bg-orange-100/80 backdrop-blur-md p-4 sm:p-5 rounded-xl shadow-lg border border-purple-100/60 transform transition-all duration-300 hover:-translate-y-1 ${
-        isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-6"
-      }`}
-    >
-      <div className="flex items-center space-x-3 mb-4">
-        <h3 className="text-lg sm:text-xl font-bold text-gray-800">
-          Investment Focus Areas
-        </h3>
-      </div>
-      <div className="flex flex-wrap gap-2 sm:gap-2.5">
-        {focusAreas.map((area, index) => (
-          <span
-            key={index}
-            className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-full text-orange-600 text-xs sm:text-sm font-medium shadow transition-all duration-300 hover:shadow-md cursor-default bg-white"
-            title={area}
-          >
-            {area}
-          </span>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
-
+            {/* Investment Focus Areas */}
+            {focusAreas.length > 0 && (
+              <div
+                className={`bg-orange-100/80 backdrop-blur-md p-4 sm:p-5 rounded-xl shadow-lg border border-purple-100/60 transform transition-all duration-300 hover:-translate-y-1 ${
+                  isVisible
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 translate-x-6"
+                }`}
+              >
+                <div className="flex items-center space-x-3 mb-4">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-800">
+                    Investment Focus Areas
+                  </h3>
+                </div>
+                <div className="flex flex-wrap gap-2 sm:gap-2.5">
+                  {focusAreas.map((area, index) => (
+                    <span
+                      key={index}
+                      className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-full text-orange-600 text-xs sm:text-sm font-medium shadow transition-all duration-300 hover:shadow-md cursor-default bg-white"
+                      title={area}
+                    >
+                      {area}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <style jsx>{`

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getApiId } from '../utils/strapiHelper';
 
 // const API_URL = 'http://localhost:1337/api';
-const APP_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+export const APP_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 export const API_URL = `${APP_URL}/api`;
 
 // // Company data
@@ -37,22 +37,11 @@ export const API_URL = `${APP_URL}/api`;
 //     throw error;
 //   }
 // };
-export const fetchCompanies = async (filters = {}) => {
+
+export const fetchCompanies = async () => {
   try {
     // Build query parameters
-    let queryParams = '?populate=*';
-
-    // Add region filter if provided
-    if (filters.region && filters.region !== 'all') {
-      queryParams += `&filters[Regions][$eq]=${filters.region}`;
-    }
-
-    // Add sorting if needed
-    if (filters.sort !== false) {
-      queryParams += '&sort=createdAt:desc';
-    }
-
-    console.log(`${API_URL}/startups${queryParams}`);
+    // console.log(`${API_URL}/startups${queryParams}`);
 
     const response = await axios.get(`${API_URL}/startups${queryParams}`);
     return response.data;

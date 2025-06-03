@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import logo from "/logo.svg";
 
 // TODO: Reuse this component in StartupDetails.jsx
-export default function SolarXNavbar() {
+export default function SolarXNavbar({centerTop = "SolarX", centerBottom = "Startup Challenge"}) {
   const [bannerVisible, setBannerVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -39,38 +39,51 @@ export default function SolarXNavbar() {
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Global Accelerator", href: "/global-accelerator" },
-    { label: "Funding", href: "/funding" },
-    { label: "Impact", href: "/impact" },
-    { label: "Global Reach", href: "/global-reach" },
-    { label: "Success Stories", href: "/success-stories" },
     { label: "Contact", href: "/contact" },
     { label: "Apply Now", href: "/apply" },
   ];
 
   return (
-    <header className="fixed top-0 left-0 bg-orange-600 px-6 flex justify-between items-center w-full shadow-sm transition-all duration-300 z-[1000]">
+    <header className="fixed top-0 left-0 bg-orange-600 px-3 md:px-6 flex justify-between items-center w-full shadow-sm transition-all duration-300 z-[1000] py-1">
       <a
         href="/"
-        className="flex flex-col md:flex-row items-center space-x-4 bg-gray-100 rounded-sm"
+        className="flex flex-row items-center space-x-4 rounded-sm h-full flex-grow"
       >
         <img
           src={logo}
           alt="International Solar Alliance Logo"
-          className="px-2 py-[20px] rounded-sm w-32"
+          className="px-2 py-[20px] h-full rounded-sm w-24 md:w-32 lg:w-36 object-contain bg-white "
         />
-        <span className="text-3xl font-bold px-2 text-orange-600">
-          SolarX Starup Challenge
-        </span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <div className="md:hidden flex flex-col items-center justify-center text-xl font-semibold px-2 text-white">
+            <div className="flex items-center space-x-2 text-2xl">
+              <div className="h-1 w-16 bg-white"></div>
+              <span className="">{centerTop}</span>
+              <div className="h-1 w-16 bg-white"></div>
+            </div>
+            <span className="text-center mb-1">{centerBottom}</span>
+            <div className="h-1 w-full bg-white"></div>
+          </div>
+        </div>
       </a>
 
-      {/* Desktop Navigation */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <div className="hidden md:flex flex-col items-center justify-center text-xl font-semibold px-2 text-white">
+          <div className="flex items-center space-x-2 text-3xl">
+            <div className="h-1 w-16 bg-white"></div>
+            <span className="">{centerTop}</span>
+            <div className="h-1 w-16 bg-white"></div>
+          </div>
+          <span className="text-center mb-1 text-2xl">{centerBottom}</span>
+          <div className="h-1 w-full bg-white"></div>
+        </div>
+      </div>
       <nav className="hidden lg:block ">
         <ul className="flex space-x-6 ">
           {navItems.map((item) => (
             <li key={item.label} className="relative group">
-              <a href={item.href} className="text-stone-50 font-medium text-lg">
+              <a href={item.href} className="text-stone-50 font-medium text-md">
                 {item.label}
-                {/* Underline */}
                 <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 rounded-md bg-white transition-all duration-300 group-hover:w-full"></span>
               </a>
             </li>
